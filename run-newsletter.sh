@@ -27,7 +27,10 @@ echo "========================================" | tee -a "$LOG_FILE"
 # Read prompt from file
 PROMPT=$(cat newsletter-prompt.md)
 
-/home/cdsupina/.local/bin/claude -p "$PROMPT" 2>&1 | tee -a "$LOG_FILE"
+# Use Claude path from environment or default to 'claude'
+CLAUDE_CMD="${CLAUDE_PATH:-claude}"
+
+$CLAUDE_CMD -p "$PROMPT" 2>&1 | tee -a "$LOG_FILE"
 
 EXIT_CODE=${PIPESTATUS[0]}
 
