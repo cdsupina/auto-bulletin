@@ -1,0 +1,11 @@
+{
+  "title": "The Auto Bulletin",
+  "subtitle": "by Metalmancy",
+  "footer_brand": "METALMANCY",
+  "footer_tagline": "Your daily dose of news and updates",
+  "footer_credits": "Generated with Claude Code",
+  "schedule": {
+    "time": "08:00",
+    "timezone": "America/Chicago"
+  }
+}

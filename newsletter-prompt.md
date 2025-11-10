@@ -10,21 +10,34 @@ Please perform the following task:
 
 3. Use WebSearch to find recent and relevant news/information about each topic from the past week
 
-4. Compile the findings into a well-formatted HTML newsletter with:
-   - A brief introduction
-   - Sections for each topic with 2-3 top stories/updates
-   - IMPORTANT: Each story/update MUST include at least one source link
-   - Format sources clearly (e.g., "Source: [Article Title](URL)" or as inline links)
+4. Read the newsletter template at ~/Projects/auto-bulletin/newsletter-template-email.html to understand the structure and style
+
+5. Read the newsletter configuration at ~/Projects/auto-bulletin/newsletter-config.json to get branding values
+
+6. Compile the findings into a well-formatted HTML newsletter using the template structure:
+   - Replace {{TITLE}} with the value from newsletter-config.json
+   - Replace {{SUBTITLE}} with the value from newsletter-config.json
+   - Replace {{DATE}} with today's date in a readable format (e.g., "November 10, 2025")
+   - Replace {{INTRO}} with a brief introduction paragraph
+   - Replace {{FOOTER_BRAND}} with the value from newsletter-config.json
+   - Replace {{FOOTER_TAGLINE}} with the value from newsletter-config.json
+   - Replace {{FOOTER_CREDITS}} with the value from newsletter-config.json
+   - Use the section pattern from the template for each topic
+   - Include appropriate emoji for each section (🦀 for Rust, 🤖 for AI, etc.)
+   - Each story should have: title (h3), content paragraph(s), and a source section
+   - IMPORTANT: Each story/update MUST include at least one source link in the source section
+   - Format sources as: <strong>Source:</strong> <a href="URL">Article Title - Publication Name</a>
    - DO NOT include a summary section at the end
    - It's okay to skip a topic section entirely if there is no genuinely new news for that topic
+   - Use the <div class="divider"></div> between major topic sections for visual separation
 
-5. Save the newsletter HTML to ~/Projects/daily-newsletter/newsletters/newsletter-$(date +%Y-%m-%d).html
+7. Save the newsletter HTML to ~/Projects/auto-bulletin/newsletters/newsletter-$(date +%Y-%m-%d).html
 
-6. Send the email using the existing send_email.py script:
+8. Send the email using the existing send_email.py script:
    - Run: python3 ~/Projects/daily-newsletter/send_email.py ~/Projects/daily-newsletter/newsletters/newsletter-$(date +%Y-%m-%d).html
    - The script will use environment variables for email configuration
 
-7. Report success or any errors encountered
+9. Report success or any errors encountered
 
 Work autonomously and complete all steps.
 
