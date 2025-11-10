@@ -1,18 +1,18 @@
 Please perform the following task:
 
-1. Read the file ~/Projects/daily-newsletter/interests.md to understand what topics I'm interested in
+1. Read the file interests.md to understand what topics I'm interested in
 
 2. Check past newsletters to avoid repetition:
-   - Read the 3 most recent newsletter files in ~/Projects/daily-newsletter/newsletters/
+   - Read the 3 most recent newsletter files in newsletters/
    - Note what topics and stories were already covered
    - Only include information that is genuinely new or has notable recent updates
    - It's okay to mention a topic again if there's significant new developments
 
 3. Use WebSearch to find recent and relevant news/information about each topic from the past week
 
-4. Read the newsletter template at ~/Projects/auto-bulletin/newsletter-template-email.html to understand the structure and style
+4. Read the newsletter template at newsletter-template-email.html to understand the structure and style
 
-5. Read the newsletter configuration at ~/Projects/auto-bulletin/newsletter-config.json to get branding values
+5. Read the newsletter configuration at newsletter-config.json to get branding values
 
 6. Compile the findings into a well-formatted HTML newsletter using the template structure:
    - Replace {{TITLE}} with the value from newsletter-config.json
@@ -31,10 +31,10 @@ Please perform the following task:
    - It's okay to skip a topic section entirely if there is no genuinely new news for that topic
    - Use the <div class="divider"></div> between major topic sections for visual separation
 
-7. Save the newsletter HTML to ~/Projects/auto-bulletin/newsletters/newsletter-$(date +%Y-%m-%d).html
+7. Save the newsletter HTML to newsletters/newsletter-$(date +%Y-%m-%d).html
 
 8. Send the email using the existing send_email.py script:
-   - Run: python3 ~/Projects/daily-newsletter/send_email.py ~/Projects/daily-newsletter/newsletters/newsletter-$(date +%Y-%m-%d).html
+   - Run: python3 send_email.py newsletters/newsletter-$(date +%Y-%m-%d).html
    - The script will use environment variables for email configuration
 
 9. Report success or any errors encountered
