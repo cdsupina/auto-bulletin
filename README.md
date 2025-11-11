@@ -1,6 +1,6 @@
-# Automated Daily Newsletter
+# The Auto Bulletin
 
-A fully automated system that uses Claude Code to search the web for topics you're interested in and emails you a daily newsletter.
+A fully automated newsletter system that uses Claude Code to search the web for topics you're interested in and emails you a daily newsletter with a custom dark-themed design.
 
 ## How It Works
 
@@ -21,7 +21,6 @@ No API credits needed - uses your local Claude Code installation!
 Copy the example environment file and add your email settings:
 
 ```bash
-cd ~/Projects/daily-newsletter
 cp .env.example .env
 nano .env
 ```
@@ -64,14 +63,18 @@ Before setting up automation, test the script:
 
 Check the `logs/` directory for output and verify you received an email.
 
-### 4. Set Up Daily Automation
+### 4. Configure Newsletter Settings
 
-The script reads the delivery time from your `.env` file. Set your preferred time:
+Edit `newsletter-config.json` to customize branding and schedule:
 
 ```bash
-nano .env
-# Set NEWSLETTER_TIME=08:00 (or your preferred time in HH:MM format)
+nano newsletter-config.json
 ```
+
+This file contains:
+- Newsletter title and branding ("The Auto Bulletin by Metalmancy")
+- Footer text
+- Delivery schedule time and timezone
 
 Then run the setup script to create a cron job:
 
@@ -79,7 +82,7 @@ Then run the setup script to create a cron job:
 ./setup-cron.sh
 ```
 
-To change the time later, just edit `NEWSLETTER_TIME` in `.env` and run `./setup-cron.sh` again.
+To change the time later, just edit `schedule.time` in `newsletter-config.json` and run `./setup-cron.sh` again.
 
 You can also override with a specific cron time:
 
@@ -116,8 +119,8 @@ You should see an entry pointing to your `run-newsletter.sh` script.
 View the latest log file:
 
 ```bash
-ls -lt ~/Projects/daily-newsletter/logs/
-cat ~/Projects/daily-newsletter/logs/newsletter-YYYY-MM-DD.log
+ls -lt logs/
+cat logs/newsletter-YYYY-MM-DD.log
 ```
 
 ### Cron Environment Issues
@@ -153,7 +156,6 @@ If using a Google Workspace email with an alternate address (like sending from n
 To generate and send a newsletter immediately:
 
 ```bash
-cd ~/Projects/daily-newsletter
 ./run-newsletter.sh
 ```
 
@@ -174,25 +176,31 @@ Cron syntax: `minute hour day month weekday`
 
 ### Modify Newsletter Format
 
-Edit the prompt in `run-newsletter.sh` to customize how Claude formats your newsletter.
+The newsletter uses an email-optimized HTML template with the Metalmancy dark theme:
+- Edit `newsletter-template-email.html` to change the design
+- Edit `newsletter-config.json` to change branding text
+- Edit `newsletter-prompt.md` to customize the research instructions
 
 ## Project Structure
 
 ```
-daily-newsletter/
-├── interests.md           # Your topics (edit this!)
-├── .env                   # Email configuration (create from .env.example)
-├── .env.example          # Example configuration
-├── run-newsletter.sh     # Main automation script
-├── send_email.py         # Email sending script
-├── setup-cron.sh         # Cron job setup script
-├── stop-cron.sh          # Stop cron job script
-├── .claude/              # Local Claude Code permissions
-│   └── settings.json     # Write and Bash permissions
-├── newsletters/          # Saved newsletters (date-stamped HTML files)
-├── logs/                 # Daily logs
-├── README.md            # This file
-└── CLAUDE.md            # Documentation for Claude Code
+auto-bulletin/
+├── interests.md                  # Your topics (edit this!)
+├── newsletter-config.json        # Newsletter branding and schedule
+├── newsletter-template-email.html # Email-optimized HTML template
+├── newsletter-prompt.md          # Instructions for Claude Code
+├── .env                          # Email configuration (create from .env.example)
+├── .env.example                  # Example configuration
+├── run-newsletter.sh            # Main automation script
+├── send_email.py                # Email sending script
+├── setup-cron.sh                # Cron job setup script
+├── stop-cron.sh                 # Stop cron job script
+├── .claude/                     # Local Claude Code permissions
+│   └── settings.json            # Write and Bash permissions
+├── newsletters/                 # Saved newsletters (date-stamped HTML files)
+├── logs/                        # Daily logs
+├── README.md                   # This file
+└── CLAUDE.md                   # Documentation for Claude Code
 ```
 
 ## Security Notes
