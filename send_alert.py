@@ -7,6 +7,7 @@ Sends a notification to the sender when newsletter generation fails after all re
 import smtplib
 import sys
 import os
+import json
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from datetime import datetime
@@ -38,17 +39,38 @@ def send_alert(subject, body, to_email, from_email, smtp_server, smtp_port, smtp
         return False
 
 def main():
-    # Get configuration from environment variables
-    from_email = os.getenv('EMAIL_FROM')
-    alert_email = os.getenv('ALERT_EMAIL', os.getenv('SMTP_USERNAME'))  # Default to SMTP_USERNAME if not set
-    smtp_server = os.getenv('SMTP_SERVER')
-    smtp_port = int(os.getenv('SMTP_PORT', 587))
+    # Load newsletter configuration
+    config_file = os.path.join(os.path.dirname(__file__), 'newsletter-config.json')
+    try:
+        with open(config_file, 'r') as f:
+            config = json.load(f)
+    except FileNotFoundError:
+        print(f"Error: Configuration file not found: {config_file}", file=sys.stderr)
+        print("Please create newsletter-config.json from newsletter-config.example.json", file=sys.stderr)
+        sys.exit(1)
+    except json.JSONDecodeError as e:
+        print(f"Error: Invalid JSON in configuration file: {e}", file=sys.stderr)
+        sys.exit(1)
+
+    # Get email configuration from config file
+    from_email = config.get('email', {}).get('from')
+    alert_email = config.get('email', {}).get('alert')
+    smtp_server = config.get('smtp', {}).get('server')
+    smtp_port = config.get('smtp', {}).get('port', 587)
+
+    # Get SMTP credentials from environment variables (still secret)
     smtp_username = os.getenv('SMTP_USERNAME')
     smtp_password = os.getenv('SMTP_PASSWORD')
 
+    # Default alert_email to SMTP_USERNAME if not configured
+    if not alert_email:
+        alert_email = smtp_username
+
     # Validate configuration
     if not all([from_email, alert_email, smtp_server, smtp_username, smtp_password]):
-        print("Error: Missing email configuration in environment variables", file=sys.stderr)
+        print("Error: Missing email configuration", file=sys.stderr)
+        print("Required in newsletter-config.json: email.from, smtp.server", file=sys.stderr)
+        print("Required in .env: SMTP_USERNAME, SMTP_PASSWORD", file=sys.stderr)
         sys.exit(1)
 
     # Get failure details from command line arguments

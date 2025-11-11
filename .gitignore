@@ -1,6 +1,9 @@
 # Environment variables (contains sensitive credentials)
 .env
 
+# Newsletter configuration (contains email addresses and SMTP settings)
+newsletter-config.json
+
 # Personal interests file
 interests.md
 

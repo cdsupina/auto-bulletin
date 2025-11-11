@@ -16,31 +16,44 @@ No API credits needed - uses your local Claude Code installation!
 
 ## Setup Instructions
 
-### 1. Configure Your Email
+### 1. Configure Newsletter Settings
 
-Copy the example environment file and add your email settings:
+Copy the example configuration file:
+
+```bash
+cp newsletter-config.example.json newsletter-config.json
+nano newsletter-config.json
+```
+
+Edit the `email` and `smtp` sections with your details:
+- `email.to`: Your email address (where you'll receive the newsletter)
+- `email.from`: Sender email address
+- `email.alert`: Where to send failure alerts (optional, defaults to SMTP_USERNAME)
+- `smtp.server`: Your email provider's SMTP server
+- `smtp.port`: Usually 587 for TLS
+
+**For Gmail users:**
+- Use `smtp.gmail.com` and port `587`
+
+### 2. Configure SMTP Credentials
+
+Copy the example environment file and add your SMTP authentication:
 
 ```bash
 cp .env.example .env
 nano .env
 ```
 
-Edit `.env` with your details:
-- `EMAIL_TO`: Your email address (where you'll receive the newsletter)
-- `EMAIL_FROM`: Sender email address
-- `ALERT_EMAIL`: Where to send failure alerts (optional, defaults to SMTP_USERNAME)
-- `SMTP_SERVER`: Your email provider's SMTP server
-- `SMTP_PORT`: Usually 587 for TLS
+Edit `.env` with your credentials:
 - `SMTP_USERNAME`: Your email login
 - `SMTP_PASSWORD`: Your email password (or app password)
 - `CLAUDE_PATH`: Path to Claude binary (optional, defaults to 'claude')
 
 **For Gmail users:**
-- Use `smtp.gmail.com` and port `587`
 - You'll need an [App Password](https://myaccount.google.com/apppasswords) (not your regular password)
 - Enable 2-factor authentication first, then generate an app password at https://myaccount.google.com/apppasswords
 
-### 2. Add Your Interests
+### 3. Add Your Interests
 
 Edit `interests.md` and add the topics you want to track:
 
@@ -55,7 +68,7 @@ Be specific about what you want to see in your newsletter. Examples:
 - Linux security vulnerabilities
 - etc.
 
-### 3. Test It Manually
+### 4. Test It Manually
 
 Before setting up automation, test the script:
 
@@ -65,9 +78,9 @@ Before setting up automation, test the script:
 
 Check the `logs/` directory for output and verify you received an email.
 
-### 4. Configure Newsletter Settings
+### 5. Configure Newsletter Schedule
 
-Edit `newsletter-config.json` to customize branding and schedule:
+Edit `newsletter-config.json` to customize delivery schedule:
 
 ```bash
 nano newsletter-config.json
@@ -97,7 +110,7 @@ You can also override with a specific cron time:
 ./setup-cron.sh "0 18 * * *"
 ```
 
-### 5. Stop Automation (Optional)
+### 6. Stop Automation (Optional)
 
 To stop the daily newsletter:
 
@@ -105,7 +118,7 @@ To stop the daily newsletter:
 ./stop-cron.sh
 ```
 
-### 6. Verify Cron Job
+### 7. Verify Cron Job
 
 Check that your cron job is active:
 
@@ -131,7 +144,7 @@ The newsletter system includes built-in reliability features:
 
 **Failure Alerts:**
 - If all retry attempts fail, sends an alert email
-- Alert goes to ALERT_EMAIL (or SMTP_USERNAME if not set)
+- Alert goes to `email.alert` (or SMTP_USERNAME if not set)
 - Includes failure details and log file location
 
 **Configuration:**
@@ -144,7 +157,7 @@ Edit the `execution` section in `newsletter-config.json`:
 }
 ```
 
-**Note:** Gmail blocks self-sent emails to aliases, so set ALERT_EMAIL to a different address than EMAIL_FROM.
+**Note:** Gmail blocks self-sent emails to aliases, so set `email.alert` to a different address than `email.from`.
 
 ## Troubleshooting
 
@@ -219,30 +232,31 @@ The newsletter uses an email-optimized HTML template with the Metalmancy dark th
 
 ```
 auto-bulletin/
-├── interests.md                  # Your topics (edit this!)
-├── newsletter-config.json        # Newsletter branding and schedule
-├── newsletter-template-email.html # Email-optimized HTML template
-├── newsletter-prompt.md          # Instructions for Claude Code
-├── .env                          # Email configuration (create from .env.example)
-├── .env.example                  # Example configuration
-├── run-newsletter.sh            # Main automation script with timeout/retry
-├── send_email.py                # Email sending script
-├── send_alert.py                # Failure notification script
-├── setup-cron.sh                # Cron job setup script
-├── stop-cron.sh                 # Stop cron job script
-├── .claude/                     # Local Claude Code permissions
-│   └── settings.json            # Write and Bash permissions
-├── newsletters/                 # Saved newsletters (date-stamped HTML files)
-├── logs/                        # Daily logs
-├── README.md                   # This file
-└── CLAUDE.md                   # Documentation for Claude Code
+├── interests.md                     # Your topics (edit this!)
+├── newsletter-config.json           # Newsletter settings (create from .example.json)
+├── newsletter-config.example.json   # Example configuration with placeholders
+├── newsletter-template-email.html   # Email-optimized HTML template
+├── newsletter-prompt.md             # Instructions for Claude Code
+├── .env                             # SMTP credentials (create from .env.example)
+├── .env.example                     # Example credentials
+├── run-newsletter.sh                # Main automation script with timeout/retry
+├── send_email.py                    # Email sending script
+├── send_alert.py                    # Failure notification script
+├── setup-cron.sh                    # Cron job setup script
+├── stop-cron.sh                     # Stop cron job script
+├── .claude/                         # Local Claude Code permissions
+│   └── settings.json                # Write and Bash permissions
+├── newsletters/                     # Saved newsletters (date-stamped HTML files)
+├── logs/                            # Daily logs
+├── README.md                        # This file
+└── CLAUDE.md                        # Documentation for Claude Code
 ```
 
 ## Security Notes
 
-- Keep your `.env` file private (never commit to git)
+- Keep your `.env` and `newsletter-config.json` files private (never commit to git)
 - Use app passwords instead of your main email password
-- The `.env` file contains sensitive credentials - protect it!
+- Only commit the `.example` files with placeholder values
 
 ## Requirements
 

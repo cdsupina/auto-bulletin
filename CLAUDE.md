@@ -25,15 +25,17 @@ An automated newsletter system that uses Claude Code in headless mode to:
    - Uses path to Claude from `CLAUDE_PATH` env variable or defaults to `claude`
 
 2. **send_email.py** - Email delivery script
-   - Reads email configuration from environment variables
+   - Reads email configuration from `newsletter-config.json`
+   - Reads SMTP credentials from `.env`
    - Accepts newsletter HTML file as argument
    - Sends via SMTP with TLS encryption
    - Provides detailed error messages for debugging
 
 3. **send_alert.py** - Failure notification script
    - Sends alert emails when newsletter generation fails after all retries
-   - Uses same SMTP configuration as send_email.py
-   - Sends to sender's email address (EMAIL_FROM) for monitoring
+   - Reads email configuration from `newsletter-config.json`
+   - Reads SMTP credentials from `.env`
+   - Sends to `email.alert` address (or SMTP_USERNAME if not configured)
    - Includes failure details: date, attempts, timeout, log file location
 
 4. **setup-cron.sh** - Automation setup
@@ -58,28 +60,30 @@ An automated newsletter system that uses Claude Code in headless mode to:
    - Dark theme matching Metalmancy aesthetic
    - Placeholders for dynamic content ({{TITLE}}, {{DATE}}, etc.)
 
-8. **newsletter-config.json** - Branding, schedule, and execution configuration
+8. **newsletter-config.json** - Newsletter configuration (gitignored)
    - Newsletter title and subtitle
+   - Email addresses (to, from, alert)
+   - SMTP server and port settings
    - Footer branding and text
    - Schedule time and timezone
    - Execution settings: timeout, max retries, retry delay
-   - Separates content configuration from secrets
+   - Created from `newsletter-config.example.json`
+
+9. **newsletter-config.example.json** - Example configuration file (committed)
+   - Template with placeholder values
+   - Shows required structure and fields
+   - Users copy this to create their `newsletter-config.json`
 
 ### Configuration Files
 
-**`.env`** - Runtime secrets (gitignored):
+**`.env`** - SMTP credentials only (gitignored):
 ```bash
-EMAIL_TO=recipient@example.com           # Newsletter recipient
-EMAIL_FROM=sender@example.com            # Visible sender address
-ALERT_EMAIL=admin@example.com            # Where to send failure alerts (defaults to SMTP_USERNAME)
-SMTP_SERVER=smtp.gmail.com               # SMTP server
-SMTP_PORT=587                            # SMTP port (587 for TLS)
 SMTP_USERNAME=auth-user@example.com      # SMTP authentication username
 SMTP_PASSWORD=app-password-here          # App password (not regular password)
 CLAUDE_PATH=/path/to/claude              # Optional: Path to Claude Code binary
 ```
 
-**`newsletter-config.json`** - Newsletter configuration:
+**`newsletter-config.json`** - Newsletter configuration (gitignored):
 ```json
 {
   "title": "The Auto Bulletin",
@@ -87,6 +91,15 @@ CLAUDE_PATH=/path/to/claude              # Optional: Path to Claude Code binary
   "footer_brand": "METALMANCY",
   "footer_tagline": "Your daily dose of news and updates",
   "footer_credits": "Generated with Claude Code",
+  "email": {
+    "to": "recipient@example.com",
+    "from": "sender@example.com",
+    "alert": "admin@example.com"
+  },
+  "smtp": {
+    "server": "smtp.gmail.com",
+    "port": 587
+  },
   "schedule": {
     "time": "08:00",
     "timezone": "America/Chicago"
@@ -198,10 +211,10 @@ The newsletter system includes automatic timeout and retry functionality to hand
    - Each retry is logged with attempt number and timeout duration
 
 3. **Alert on Total Failure**: If all retry attempts fail
-   - `send_alert.py` sends a notification email to ALERT_EMAIL (or SMTP_USERNAME if not set)
+   - `send_alert.py` sends a notification email to `email.alert` (or SMTP_USERNAME if not configured)
    - Alert includes: date, number of attempts, timeout used, log file path
    - Allows for manual investigation and debugging
-   - Note: Gmail blocks self-sent emails to aliases, so ALERT_EMAIL should be different from EMAIL_FROM
+   - Note: Gmail blocks self-sent emails to aliases, so `email.alert` should be different from `email.from`
 
 ### Configuration
 
@@ -281,9 +294,9 @@ The retry mechanism handles these transient issues automatically without manual 
 1. **Always test manually first**: Run `./run-newsletter.sh` before updating cron
 2. **Check logs**: Every run creates a timestamped log in `logs/`
 3. **Preserve permissions**: Don't modify `.claude/settings.json` without understanding impact
-4. **Environment variables**: All sensitive data goes in `.env`, never hardcode
+4. **Configuration split**: SMTP credentials in `.env`, all other settings in `newsletter-config.json`
 5. **Use relative paths**: Keep the project portable, avoid hardcoded absolute paths
-6. **Config in JSON**: Use `newsletter-config.json` for branding/schedule, not `.env`
+6. **Config in JSON**: Use `newsletter-config.json` for email addresses, SMTP server, branding, and schedule
 
 ### When adding features:
 
@@ -297,7 +310,11 @@ The retry mechanism handles these transient issues automatically without manual 
 
 - **Newsletters**: `newsletters/newsletter-YYYY-MM-DD.html`
 - **Logs**: `logs/newsletter-YYYY-MM-DD.log`
-- **Config**: `newsletter-config.json` (branding/schedule), `.env` (secrets)
+- **Config**:
+  - `newsletter-config.json` (email, SMTP, branding, schedule) - gitignored
+  - `newsletter-config.example.json` (template) - committed
+  - `.env` (SMTP credentials only) - gitignored
+  - `.env.example` (template) - committed
 - **Template**: `newsletter-template-email.html`
 - **Prompt**: `newsletter-prompt.md`
 - **Local Claude settings**: `.claude/settings.json`
@@ -335,8 +352,11 @@ When working with this project:
 3. **Test changes manually**: Always test with `./run-newsletter.sh` before cron
 4. **Respect permissions**: The `.claude/settings.json` files are carefully configured
 5. **Update documentation**: Keep README.md and CLAUDE.md in sync with changes
-6. **Newsletter configuration**: Time and branding in `newsletter-config.json`, secrets in `.env`
+6. **Configuration files**:
+   - `newsletter-config.json` - Email addresses, SMTP server/port, branding, schedule, execution settings
+   - `.env` - SMTP username/password only
 7. **Use relative paths**: Keep project portable
+8. **Example files**: Keep `.example` files updated when changing configuration structure
 
 ## Success Criteria
 

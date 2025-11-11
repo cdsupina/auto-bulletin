@@ -7,6 +7,7 @@ Reads newsletter content from stdin or a file and sends via SMTP
 import smtplib
 import sys
 import os
+import json
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from datetime import datetime
@@ -50,18 +51,34 @@ def send_email(subject, body, to_email, from_email, smtp_server, smtp_port, smtp
         return False
 
 def main():
-    # Get configuration from environment variables
-    to_email = os.getenv('EMAIL_TO')
-    from_email = os.getenv('EMAIL_FROM')
-    smtp_server = os.getenv('SMTP_SERVER')
-    smtp_port = int(os.getenv('SMTP_PORT', 587))
+    # Load newsletter configuration
+    config_file = os.path.join(os.path.dirname(__file__), 'newsletter-config.json')
+    try:
+        with open(config_file, 'r') as f:
+            config = json.load(f)
+    except FileNotFoundError:
+        print(f"Error: Configuration file not found: {config_file}", file=sys.stderr)
+        print("Please create newsletter-config.json from newsletter-config.example.json", file=sys.stderr)
+        sys.exit(1)
+    except json.JSONDecodeError as e:
+        print(f"Error: Invalid JSON in configuration file: {e}", file=sys.stderr)
+        sys.exit(1)
+
+    # Get email configuration from config file
+    to_email = config.get('email', {}).get('to')
+    from_email = config.get('email', {}).get('from')
+    smtp_server = config.get('smtp', {}).get('server')
+    smtp_port = config.get('smtp', {}).get('port', 587)
+
+    # Get SMTP credentials from environment variables (still secret)
     smtp_username = os.getenv('SMTP_USERNAME')
     smtp_password = os.getenv('SMTP_PASSWORD')
 
     # Validate configuration
     if not all([to_email, from_email, smtp_server, smtp_username, smtp_password]):
-        print("Error: Missing email configuration in environment variables", file=sys.stderr)
-        print("Required: EMAIL_TO, EMAIL_FROM, SMTP_SERVER, SMTP_USERNAME, SMTP_PASSWORD", file=sys.stderr)
+        print("Error: Missing email configuration", file=sys.stderr)
+        print("Required in newsletter-config.json: email.to, email.from, smtp.server", file=sys.stderr)
+        print("Required in .env: SMTP_USERNAME, SMTP_PASSWORD", file=sys.stderr)
         sys.exit(1)
 
     # Get subject (default if not provided)

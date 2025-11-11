@@ -61,10 +61,7 @@ run_claude_with_timeout() {
     echo "Newsletter generation attempt $attempt of $MAX_RETRIES" | tee -a "$LOG_FILE"
     echo "Started at $(date)" | tee -a "$LOG_FILE"
     echo "Timeout: $TIMEOUT_MINUTES minutes" | tee -a "$LOG_FILE"
-    echo "Environment check:" | tee -a "$LOG_FILE"
-    echo "  EMAIL_TO: $EMAIL_TO" | tee -a "$LOG_FILE"
-    echo "  EMAIL_FROM: $EMAIL_FROM" | tee -a "$LOG_FILE"
-    echo "  SMTP_SERVER: $SMTP_SERVER:$SMTP_PORT" | tee -a "$LOG_FILE"
+    echo "Configuration: newsletter-config.json" | tee -a "$LOG_FILE"
     echo "========================================" | tee -a "$LOG_FILE"
 
     # Run Claude with timeout

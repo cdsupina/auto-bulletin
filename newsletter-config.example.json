@@ -1,0 +1,25 @@
+{
+    "title": "The Auto Bulletin",
+    "subtitle": "by Metalmancy",
+    "footer_brand": "METALMANCY",
+    "footer_tagline": "Your daily dose of news and updates",
+    "footer_credits": "Generated with Claude Code",
+    "email": {
+        "to": "recipient@example.com",
+        "from": "sender@example.com",
+        "alert": "admin@example.com"
+    },
+    "smtp": {
+        "server": "smtp.gmail.com",
+        "port": 587
+    },
+    "schedule": {
+        "time": "08:00",
+        "timezone": "America/Chicago"
+    },
+    "execution": {
+        "timeout_minutes": 15,
+        "max_retries": 3,
+        "retry_delay_minutes": 5
+    }
+}
