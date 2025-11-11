@@ -7,6 +7,7 @@ Please perform the following task:
    - Note what topics and stories were already covered
    - Only include information that is genuinely new or has notable recent updates
    - It's okay to mention a topic again if there's significant new developments
+   - IMPORTANT: If today's newsletter already exists, regenerate it anyway with fresh research - this is expected behavior for retries and manual runs
 
 3. Conduct thorough research to find recent and relevant news/information about each topic from the past week:
    - Use WebSearch to find initial stories and sources
@@ -38,6 +39,8 @@ Please perform the following task:
    - Use the <div class="divider"></div> between major topic sections for visual separation
 
 7. Save the newsletter HTML to newsletters/newsletter-$(date +%Y-%m-%d).html
+   - Always write/overwrite this file, even if it already exists
+   - This is expected behavior - the script may be retrying or manually re-run
 
 8. Send the email using the existing send_email.py script:
    - Run: python3 send_email.py newsletters/newsletter-$(date +%Y-%m-%d).html
@@ -45,4 +48,4 @@ Please perform the following task:
 
 9. Report success or any errors encountered
 
-Work autonomously and complete all steps.
+Work autonomously and complete all steps. Do not ask for confirmation - always proceed with generating and overwriting the newsletter.

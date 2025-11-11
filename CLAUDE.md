@@ -14,11 +14,14 @@ An automated newsletter system that uses Claude Code in headless mode to:
 
 ### Core Components
 
-1. **run-newsletter.sh** - Main orchestration script
+1. **run-newsletter.sh** - Main orchestration script with timeout and retry
    - Loads environment variables from `.env`
-   - Invokes Claude Code in headless mode with `-p` flag
+   - Reads timeout and retry configuration from `newsletter-config.json`
+   - Invokes Claude Code in headless mode with `-p` flag and timeout wrapper
    - Reads prompt from `newsletter-prompt.md`
-   - Logs all output to `logs/newsletter-YYYY-MM-DD.log`
+   - Implements automatic retry logic with configurable delays
+   - Logs all output to `logs/newsletter-YYYY-MM-DD.log` including retry attempts
+   - Sends alert email if all retry attempts fail
    - Uses path to Claude from `CLAUDE_PATH` env variable or defaults to `claude`
 
 2. **send_email.py** - Email delivery script
@@ -27,32 +30,39 @@ An automated newsletter system that uses Claude Code in headless mode to:
    - Sends via SMTP with TLS encryption
    - Provides detailed error messages for debugging
 
-3. **setup-cron.sh** - Automation setup
+3. **send_alert.py** - Failure notification script
+   - Sends alert emails when newsletter generation fails after all retries
+   - Uses same SMTP configuration as send_email.py
+   - Sends to sender's email address (EMAIL_FROM) for monitoring
+   - Includes failure details: date, attempts, timeout, log file location
+
+4. **setup-cron.sh** - Automation setup
    - Reads `schedule.time` and `schedule.timezone` from `newsletter-config.json`
    - Converts to cron format (MINUTE HOUR * * *)
    - Sets TZ environment variable in cron entry if timezone specified
    - Manages cron job (add/update)
    - Allows manual override with cron syntax
 
-4. **stop-cron.sh** - Automation control
+5. **stop-cron.sh** - Automation control
    - Safely removes the cron job
    - Confirms removal with user feedback
 
-5. **newsletter-prompt.md** - Instructions for Claude Code
+6. **newsletter-prompt.md** - Instructions for Claude Code
    - Contains the detailed prompt that Claude follows
    - Specifies research depth and quality expectations
    - Uses relative paths for portability
 
-6. **newsletter-template-email.html** - Email-optimized HTML template
+7. **newsletter-template-email.html** - Email-optimized HTML template
    - Table-based layout for email client compatibility
    - Inline styles (no external CSS)
    - Dark theme matching Metalmancy aesthetic
    - Placeholders for dynamic content ({{TITLE}}, {{DATE}}, etc.)
 
-7. **newsletter-config.json** - Branding and schedule configuration
+8. **newsletter-config.json** - Branding, schedule, and execution configuration
    - Newsletter title and subtitle
    - Footer branding and text
    - Schedule time and timezone
+   - Execution settings: timeout, max retries, retry delay
    - Separates content configuration from secrets
 
 ### Configuration Files
@@ -61,6 +71,7 @@ An automated newsletter system that uses Claude Code in headless mode to:
 ```bash
 EMAIL_TO=recipient@example.com           # Newsletter recipient
 EMAIL_FROM=sender@example.com            # Visible sender address
+ALERT_EMAIL=admin@example.com            # Where to send failure alerts (defaults to SMTP_USERNAME)
 SMTP_SERVER=smtp.gmail.com               # SMTP server
 SMTP_PORT=587                            # SMTP port (587 for TLS)
 SMTP_USERNAME=auth-user@example.com      # SMTP authentication username
@@ -79,6 +90,11 @@ CLAUDE_PATH=/path/to/claude              # Optional: Path to Claude Code binary
   "schedule": {
     "time": "08:00",
     "timezone": "America/Chicago"
+  },
+  "execution": {
+    "timeout_minutes": 15,
+    "max_retries": 3,
+    "retry_delay_minutes": 5
   }
 }
 ```
@@ -165,6 +181,58 @@ The newsletter uses `newsletter-template-email.html` which is optimized for emai
   - Background: `#0e0e20`, `#27263a`
   - Accents: `#F0CD5A` (gold), `#8772d2` (purple)
   - Text: `#FFFFFE` (white), `#d1d1d1` (gray)
+
+## Timeout and Retry Mechanism
+
+The newsletter system includes automatic timeout and retry functionality to handle cases where Claude Code hangs or takes too long:
+
+### How It Works
+
+1. **Timeout Enforcement**: Each newsletter generation attempt is wrapped with the `timeout` command
+   - Default: 15 minutes (configurable via `execution.timeout_minutes`)
+   - If Claude doesn't complete within the timeout, the process is killed (exit code 124)
+
+2. **Automatic Retries**: Failed attempts trigger automatic retries
+   - Default: 3 attempts (configurable via `execution.max_retries`)
+   - Includes 5-minute delay between retries (configurable via `execution.retry_delay_minutes`)
+   - Each retry is logged with attempt number and timeout duration
+
+3. **Alert on Total Failure**: If all retry attempts fail
+   - `send_alert.py` sends a notification email to ALERT_EMAIL (or SMTP_USERNAME if not set)
+   - Alert includes: date, number of attempts, timeout used, log file path
+   - Allows for manual investigation and debugging
+   - Note: Gmail blocks self-sent emails to aliases, so ALERT_EMAIL should be different from EMAIL_FROM
+
+### Configuration
+
+All timeout and retry settings are in `newsletter-config.json` under the `execution` section:
+
+```json
+"execution": {
+  "timeout_minutes": 15,        // Max time per attempt
+  "max_retries": 3,              // Total attempts
+  "retry_delay_minutes": 5       // Wait time between retries
+}
+```
+
+### Log Output
+
+The enhanced logging shows:
+- Attempt number (e.g., "Attempt 2 of 3")
+- Timeout setting for each attempt
+- Exit code and status (SUCCESS, TIMEOUT, FAILED)
+- Retry delays
+- Final outcome summary
+
+### When Timeouts Occur
+
+Common causes of timeouts:
+- WebSearch API slow responses or rate limiting
+- Claude API temporary issues
+- Network connectivity problems
+- Overly complex research tasks taking longer than expected
+
+The retry mechanism handles these transient issues automatically without manual intervention.
 
 ## Common Issues and Solutions
 

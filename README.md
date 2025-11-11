@@ -28,10 +28,12 @@ nano .env
 Edit `.env` with your details:
 - `EMAIL_TO`: Your email address (where you'll receive the newsletter)
 - `EMAIL_FROM`: Sender email address
+- `ALERT_EMAIL`: Where to send failure alerts (optional, defaults to SMTP_USERNAME)
 - `SMTP_SERVER`: Your email provider's SMTP server
 - `SMTP_PORT`: Usually 587 for TLS
 - `SMTP_USERNAME`: Your email login
 - `SMTP_PASSWORD`: Your email password (or app password)
+- `CLAUDE_PATH`: Path to Claude binary (optional, defaults to 'claude')
 
 **For Gmail users:**
 - Use `smtp.gmail.com` and port `587`
@@ -75,6 +77,7 @@ This file contains:
 - Newsletter title and branding ("The Auto Bulletin by Metalmancy")
 - Footer text
 - Delivery schedule time and timezone
+- Execution settings: timeout duration, retry attempts, retry delays
 
 Then run the setup script to create a cron job:
 
@@ -111,6 +114,37 @@ crontab -l
 ```
 
 You should see an entry pointing to your `run-newsletter.sh` script.
+
+## Automatic Timeout & Retry
+
+The newsletter system includes built-in reliability features:
+
+**Timeout Protection:**
+- Each newsletter generation has a 15-minute timeout (configurable)
+- Prevents hung processes from blocking future runs
+- Automatically kills and retries if Claude Code hangs
+
+**Automatic Retries:**
+- Up to 3 attempts per day (configurable)
+- 5-minute delay between retries (configurable)
+- Handles transient API issues automatically
+
+**Failure Alerts:**
+- If all retry attempts fail, sends an alert email
+- Alert goes to ALERT_EMAIL (or SMTP_USERNAME if not set)
+- Includes failure details and log file location
+
+**Configuration:**
+Edit the `execution` section in `newsletter-config.json`:
+```json
+"execution": {
+  "timeout_minutes": 15,
+  "max_retries": 3,
+  "retry_delay_minutes": 5
+}
+```
+
+**Note:** Gmail blocks self-sent emails to aliases, so set ALERT_EMAIL to a different address than EMAIL_FROM.
 
 ## Troubleshooting
 
@@ -191,8 +225,9 @@ auto-bulletin/
 ├── newsletter-prompt.md          # Instructions for Claude Code
 ├── .env                          # Email configuration (create from .env.example)
 ├── .env.example                  # Example configuration
-├── run-newsletter.sh            # Main automation script
+├── run-newsletter.sh            # Main automation script with timeout/retry
 ├── send_email.py                # Email sending script
+├── send_alert.py                # Failure notification script
 ├── setup-cron.sh                # Cron job setup script
 ├── stop-cron.sh                 # Stop cron job script
 ├── .claude/                     # Local Claude Code permissions

@@ -7,5 +7,10 @@
   "schedule": {
     "time": "08:00",
     "timezone": "America/Chicago"
+  },
+  "execution": {
+    "timeout_minutes": 15,
+    "max_retries": 3,
+    "retry_delay_minutes": 5
   }
 }
