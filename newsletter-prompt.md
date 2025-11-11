@@ -8,7 +8,13 @@ Please perform the following task:
    - Only include information that is genuinely new or has notable recent updates
    - It's okay to mention a topic again if there's significant new developments
 
-3. Use WebSearch to find recent and relevant news/information about each topic from the past week
+3. Conduct thorough research to find recent and relevant news/information about each topic from the past week:
+   - Use WebSearch to find initial stories and sources
+   - Use WebFetch to read full articles and gather detailed information
+   - For each topic, search multiple angles and sources to find the most interesting stories
+   - Look for lesser-known but significant developments, not just mainstream headlines
+   - Prioritize quality and depth over speed - take time to find genuinely valuable content
+   - Aim for diverse sources across different publications and communities
 
 4. Read the newsletter template at newsletter-template-email.html to understand the structure and style
 
@@ -40,5 +46,3 @@ Please perform the following task:
 9. Report success or any errors encountered
 
 Work autonomously and complete all steps.
-
-Thank you!
