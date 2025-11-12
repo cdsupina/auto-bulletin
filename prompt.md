@@ -35,7 +35,11 @@ Please perform the following task:
    - Include appropriate emoji for each section (🦀 for Rust, 🤖 for AI, etc.)
    - Each story can use one of two formats:
      * PARAGRAPH FORMAT: For news articles, analysis, and general stories - includes title (h3), content paragraph(s), and a single source section at the bottom
+       - Aim for approximately 100 words of story text (1-2 paragraphs)
+       - Be concise and focus on the most important details
      * LIST FORMAT: For jobs, products, events, tools, or any content where you want to highlight 3-5 specific items with individual links - includes title (h3), optional intro paragraph, and then a list of items each with their own direct link
+       - Keep intro paragraph brief (1-2 sentences if included)
+       - Each list item description should be concise (1-2 sentences)
    - Use the LIST FORMAT when:
      * Presenting job openings (each job links to its posting)
      * Listing products or tools (each links to its page)
