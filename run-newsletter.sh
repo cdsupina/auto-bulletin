@@ -11,7 +11,7 @@ if [ -f .env ]; then
     export $(cat .env | grep -v '^#' | xargs)
 fi
 
-# Read configuration from newsletter-config.json
+# Read configuration from config.json
 if ! command -v python3 &> /dev/null; then
     echo "Error: python3 is required to read configuration"
     exit 1
@@ -22,7 +22,7 @@ CONFIG=$(python3 -c "
 import json
 import sys
 try:
-    with open('newsletter-config.json', 'r') as f:
+    with open('config.json', 'r') as f:
         config = json.load(f)
     exec_config = config.get('execution', {})
     print(f\"{exec_config.get('timeout_minutes', 15)}\")
@@ -48,7 +48,7 @@ LOG_FILE="logs/newsletter-$TODAY.log"
 mkdir -p logs
 
 # Read prompt from file
-PROMPT=$(cat newsletter-prompt.md)
+PROMPT=$(cat prompt.md)
 
 # Use Claude path from environment or default to 'claude'
 CLAUDE_CMD="${CLAUDE_PATH:-claude}"
@@ -61,7 +61,7 @@ run_claude_with_timeout() {
     echo "Newsletter generation attempt $attempt of $MAX_RETRIES" | tee -a "$LOG_FILE"
     echo "Started at $(date)" | tee -a "$LOG_FILE"
     echo "Timeout: $TIMEOUT_MINUTES minutes" | tee -a "$LOG_FILE"
-    echo "Configuration: newsletter-config.json" | tee -a "$LOG_FILE"
+    echo "Configuration: config.json" | tee -a "$LOG_FILE"
     echo "========================================" | tee -a "$LOG_FILE"
 
     # Run Claude with timeout

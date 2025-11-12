@@ -40,13 +40,13 @@ def send_alert(subject, body, to_email, from_email, smtp_server, smtp_port, smtp
 
 def main():
     # Load newsletter configuration
-    config_file = os.path.join(os.path.dirname(__file__), 'newsletter-config.json')
+    config_file = os.path.join(os.path.dirname(__file__), 'config.json')
     try:
         with open(config_file, 'r') as f:
             config = json.load(f)
     except FileNotFoundError:
         print(f"Error: Configuration file not found: {config_file}", file=sys.stderr)
-        print("Please create newsletter-config.json from newsletter-config.example.json", file=sys.stderr)
+        print("Please create config.json from config.example.json", file=sys.stderr)
         sys.exit(1)
     except json.JSONDecodeError as e:
         print(f"Error: Invalid JSON in configuration file: {e}", file=sys.stderr)
@@ -69,7 +69,7 @@ def main():
     # Validate configuration
     if not all([from_email, alert_email, smtp_server, smtp_username, smtp_password]):
         print("Error: Missing email configuration", file=sys.stderr)
-        print("Required in newsletter-config.json: email.from, smtp.server", file=sys.stderr)
+        print("Required in config.json: email.from, smtp.server", file=sys.stderr)
         print("Required in .env: SMTP_USERNAME, SMTP_PASSWORD", file=sys.stderr)
         sys.exit(1)
 

@@ -11,16 +11,16 @@ cd "$(dirname "$0")"
 SCRIPT_PATH="$(pwd)/run-newsletter.sh"
 
 # Load newsletter time and timezone from config file
-if [ -f newsletter-config.json ]; then
+if [ -f config.json ]; then
     # Extract time from JSON using grep and sed
-    NEWSLETTER_TIME=$(grep -o '"time"[[:space:]]*:[[:space:]]*"[^"]*"' newsletter-config.json | sed 's/.*"\([^"]*\)".*/\1/')
-    NEWSLETTER_TZ=$(grep -o '"timezone"[[:space:]]*:[[:space:]]*"[^"]*"' newsletter-config.json | sed 's/.*"\([^"]*\)".*/\1/')
+    NEWSLETTER_TIME=$(grep -o '"time"[[:space:]]*:[[:space:]]*"[^"]*"' config.json | sed 's/.*"\([^"]*\)".*/\1/')
+    NEWSLETTER_TZ=$(grep -o '"timezone"[[:space:]]*:[[:space:]]*"[^"]*"' config.json | sed 's/.*"\([^"]*\)".*/\1/')
 
     if [ -n "$NEWSLETTER_TIME" ]; then
         HOUR=$(echo "$NEWSLETTER_TIME" | cut -d: -f1)
         MINUTE=$(echo "$NEWSLETTER_TIME" | cut -d: -f2)
         DEFAULT_CRON_TIME="$MINUTE $HOUR * * *"
-        echo "Using time from newsletter-config.json: $NEWSLETTER_TIME"
+        echo "Using time from config.json: $NEWSLETTER_TIME"
 
         if [ -n "$NEWSLETTER_TZ" ]; then
             echo "Using timezone: $NEWSLETTER_TZ"
@@ -29,11 +29,11 @@ if [ -f newsletter-config.json ]; then
         fi
     else
         DEFAULT_CRON_TIME="0 8 * * *"
-        echo "No time found in newsletter-config.json, using default: 8:00 AM"
+        echo "No time found in config.json, using default: 8:00 AM"
     fi
 else
     DEFAULT_CRON_TIME="0 8 * * *"
-    echo "No newsletter-config.json found, using default: 8:00 AM"
+    echo "No config.json found, using default: 8:00 AM"
 fi
 
 # Allow override via command line argument
@@ -62,7 +62,7 @@ echo "Current cron entry:"
 crontab -l | grep "$SCRIPT_PATH"
 echo ""
 echo "To modify the time or timezone:"
-echo "  1. Edit schedule.time and schedule.timezone in newsletter-config.json"
+echo "  1. Edit schedule.time and schedule.timezone in config.json"
 echo "  2. Run ./setup-cron.sh again"
 echo ""
 echo "Or override with: ./setup-cron.sh 'MINUTE HOUR * * *'"

@@ -2,7 +2,7 @@
 .env
 
 # Newsletter configuration (contains email addresses and SMTP settings)
-newsletter-config.json
+config.json
 
 # Personal interests file
 interests.md

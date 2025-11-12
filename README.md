@@ -21,8 +21,8 @@ No API credits needed - uses your local Claude Code installation!
 Copy the example configuration file:
 
 ```bash
-cp newsletter-config.example.json newsletter-config.json
-nano newsletter-config.json
+cp config.example.json config.json
+nano config.json
 ```
 
 Edit the `email` and `smtp` sections with your details:
@@ -80,10 +80,10 @@ Check the `logs/` directory for output and verify you received an email.
 
 ### 5. Configure Newsletter Schedule
 
-Edit `newsletter-config.json` to customize delivery schedule:
+Edit `config.json` to customize delivery schedule:
 
 ```bash
-nano newsletter-config.json
+nano config.json
 ```
 
 This file contains:
@@ -98,7 +98,7 @@ Then run the setup script to create a cron job:
 ./setup-cron.sh
 ```
 
-To change the time later, just edit `schedule.time` in `newsletter-config.json` and run `./setup-cron.sh` again.
+To change the time later, just edit `schedule.time` in `config.json` and run `./setup-cron.sh` again.
 
 You can also override with a specific cron time:
 
@@ -148,7 +148,7 @@ The newsletter system includes built-in reliability features:
 - Includes failure details and log file location
 
 **Configuration:**
-Edit the `execution` section in `newsletter-config.json`:
+Edit the `execution` section in `config.json`:
 ```json
 "execution": {
   "timeout_minutes": 15,
@@ -224,19 +224,19 @@ Cron syntax: `minute hour day month weekday`
 ### Modify Newsletter Format
 
 The newsletter uses an email-optimized HTML template with the Metalmancy dark theme:
-- Edit `newsletter-template-email.html` to change the design
-- Edit `newsletter-config.json` to change branding text
-- Edit `newsletter-prompt.md` to customize the research instructions
+- Edit `template.html` to change the design
+- Edit `config.json` to change branding text
+- Edit `prompt.md` to customize the research instructions
 
 ## Project Structure
 
 ```
 auto-bulletin/
 ├── interests.md                     # Your topics (edit this!)
-├── newsletter-config.json           # Newsletter settings (create from .example.json)
-├── newsletter-config.example.json   # Example configuration with placeholders
-├── newsletter-template-email.html   # Email-optimized HTML template
-├── newsletter-prompt.md             # Instructions for Claude Code
+├── config.json                      # Newsletter settings (create from .example.json)
+├── config.example.json              # Example configuration with placeholders
+├── template.html                    # Email-optimized HTML template
+├── prompt.md                        # Instructions for Claude Code
 ├── .env                             # SMTP credentials (create from .env.example)
 ├── .env.example                     # Example credentials
 ├── run-newsletter.sh                # Main automation script with timeout/retry
@@ -254,7 +254,7 @@ auto-bulletin/
 
 ## Security Notes
 
-- Keep your `.env` and `newsletter-config.json` files private (never commit to git)
+- Keep your `.env` and `config.json` files private (never commit to git)
 - Use app passwords instead of your main email password
 - Only commit the `.example` files with placeholder values
 

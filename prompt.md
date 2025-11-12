@@ -17,18 +17,18 @@ Please perform the following task:
    - Prioritize quality and depth over speed - take time to find genuinely valuable content
    - Aim for diverse sources across different publications and communities
 
-4. Read the newsletter template at newsletter-template-email.html to understand the structure and style
+4. Read the newsletter template at template.html to understand the structure and style
 
-5. Read the newsletter configuration at newsletter-config.json to get branding values
+5. Read the newsletter configuration at config.json to get branding values
 
 6. Compile the findings into a well-formatted HTML newsletter using the template structure:
-   - Replace {{TITLE}} with the value from newsletter-config.json
-   - Replace {{SUBTITLE}} with the value from newsletter-config.json
+   - Replace {{TITLE}} with the value from config.json
+   - Replace {{SUBTITLE}} with the value from config.json
    - Replace {{DATE}} with today's date in a readable format (e.g., "November 10, 2025")
    - Replace {{INTRO}} with a brief introduction paragraph
-   - Replace {{FOOTER_BRAND}} with the value from newsletter-config.json
-   - Replace {{FOOTER_TAGLINE}} with the value from newsletter-config.json
-   - Replace {{FOOTER_CREDITS}} with the value from newsletter-config.json
+   - Replace {{FOOTER_BRAND}} with the value from config.json
+   - Replace {{FOOTER_TAGLINE}} with the value from config.json
+   - Replace {{FOOTER_CREDITS}} with the value from config.json
    - Use the section pattern from the template for each topic
    - Include appropriate emoji for each section (🦀 for Rust, 🤖 for AI, etc.)
    - Each story should have: title (h3), content paragraph(s), and a source section

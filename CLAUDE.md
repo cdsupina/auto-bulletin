@@ -16,16 +16,16 @@ An automated newsletter system that uses Claude Code in headless mode to:
 
 1. **run-newsletter.sh** - Main orchestration script with timeout and retry
    - Loads environment variables from `.env`
-   - Reads timeout and retry configuration from `newsletter-config.json`
+   - Reads timeout and retry configuration from `config.json`
    - Invokes Claude Code in headless mode with `-p` flag and timeout wrapper
-   - Reads prompt from `newsletter-prompt.md`
+   - Reads prompt from `prompt.md`
    - Implements automatic retry logic with configurable delays
    - Logs all output to `logs/newsletter-YYYY-MM-DD.log` including retry attempts
    - Sends alert email if all retry attempts fail
    - Uses path to Claude from `CLAUDE_PATH` env variable or defaults to `claude`
 
 2. **send_email.py** - Email delivery script
-   - Reads email configuration from `newsletter-config.json`
+   - Reads email configuration from `config.json`
    - Reads SMTP credentials from `.env`
    - Accepts newsletter HTML file as argument
    - Sends via SMTP with TLS encryption
@@ -33,13 +33,13 @@ An automated newsletter system that uses Claude Code in headless mode to:
 
 3. **send_alert.py** - Failure notification script
    - Sends alert emails when newsletter generation fails after all retries
-   - Reads email configuration from `newsletter-config.json`
+   - Reads email configuration from `config.json`
    - Reads SMTP credentials from `.env`
    - Sends to `email.alert` address (or SMTP_USERNAME if not configured)
    - Includes failure details: date, attempts, timeout, log file location
 
 4. **setup-cron.sh** - Automation setup
-   - Reads `schedule.time` and `schedule.timezone` from `newsletter-config.json`
+   - Reads `schedule.time` and `schedule.timezone` from `config.json`
    - Converts to cron format (MINUTE HOUR * * *)
    - Sets TZ environment variable in cron entry if timezone specified
    - Manages cron job (add/update)
@@ -49,30 +49,30 @@ An automated newsletter system that uses Claude Code in headless mode to:
    - Safely removes the cron job
    - Confirms removal with user feedback
 
-6. **newsletter-prompt.md** - Instructions for Claude Code
+6. **prompt.md** - Instructions for Claude Code
    - Contains the detailed prompt that Claude follows
    - Specifies research depth and quality expectations
    - Uses relative paths for portability
 
-7. **newsletter-template-email.html** - Email-optimized HTML template
+7. **template.html** - Email-optimized HTML template
    - Table-based layout for email client compatibility
    - Inline styles (no external CSS)
    - Dark theme matching Metalmancy aesthetic
    - Placeholders for dynamic content ({{TITLE}}, {{DATE}}, etc.)
 
-8. **newsletter-config.json** - Newsletter configuration (gitignored)
+8. **config.json** - Newsletter configuration (gitignored)
    - Newsletter title and subtitle
    - Email addresses (to, from, alert)
    - SMTP server and port settings
    - Footer branding and text
    - Schedule time and timezone
    - Execution settings: timeout, max retries, retry delay
-   - Created from `newsletter-config.example.json`
+   - Created from `config.example.json`
 
-9. **newsletter-config.example.json** - Example configuration file (committed)
+9. **config.example.json** - Example configuration file (committed)
    - Template with placeholder values
    - Shows required structure and fields
-   - Users copy this to create their `newsletter-config.json`
+   - Users copy this to create their `config.json`
 
 ### Configuration Files
 
@@ -83,7 +83,7 @@ SMTP_PASSWORD=app-password-here          # App password (not regular password)
 CLAUDE_PATH=/path/to/claude              # Optional: Path to Claude Code binary
 ```
 
-**`newsletter-config.json`** - Newsletter configuration (gitignored):
+**`config.json`** - Newsletter configuration (gitignored):
 ```json
 {
   "title": "The Auto Bulletin",
@@ -150,7 +150,7 @@ These permissions allow Claude Code to:
 
 ## How Claude Code Runs in Headless Mode
 
-When `run-newsletter.sh` executes, it reads the prompt from `newsletter-prompt.md` and passes it to Claude Code in headless mode. The prompt instructs Claude to:
+When `run-newsletter.sh` executes, it reads the prompt from `prompt.md` and passes it to Claude Code in headless mode. The prompt instructs Claude to:
 
 1. Read `interests.md` to understand topics
 2. Check past newsletters to avoid repetition
@@ -184,7 +184,7 @@ When `run-newsletter.sh` executes, it reads the prompt from `newsletter-prompt.m
 
 ## Email Template Design
 
-The newsletter uses `newsletter-template-email.html` which is optimized for email clients:
+The newsletter uses `template.html` which is optimized for email clients:
 
 - **Table-based layout** - Better compatibility than div-based layouts
 - **Inline styles** - All CSS in style="" attributes
@@ -218,7 +218,7 @@ The newsletter system includes automatic timeout and retry functionality to hand
 
 ### Configuration
 
-All timeout and retry settings are in `newsletter-config.json` under the `execution` section:
+All timeout and retry settings are in `config.json` under the `execution` section:
 
 ```json
 "execution": {
@@ -294,9 +294,9 @@ The retry mechanism handles these transient issues automatically without manual 
 1. **Always test manually first**: Run `./run-newsletter.sh` before updating cron
 2. **Check logs**: Every run creates a timestamped log in `logs/`
 3. **Preserve permissions**: Don't modify `.claude/settings.json` without understanding impact
-4. **Configuration split**: SMTP credentials in `.env`, all other settings in `newsletter-config.json`
+4. **Configuration split**: SMTP credentials in `.env`, all other settings in `config.json`
 5. **Use relative paths**: Keep the project portable, avoid hardcoded absolute paths
-6. **Config in JSON**: Use `newsletter-config.json` for email addresses, SMTP server, branding, and schedule
+6. **Config in JSON**: Use `config.json` for email addresses, SMTP server, branding, and schedule
 
 ### When adding features:
 
@@ -311,12 +311,12 @@ The retry mechanism handles these transient issues automatically without manual 
 - **Newsletters**: `newsletters/newsletter-YYYY-MM-DD.html`
 - **Logs**: `logs/newsletter-YYYY-MM-DD.log`
 - **Config**:
-  - `newsletter-config.json` (email, SMTP, branding, schedule) - gitignored
-  - `newsletter-config.example.json` (template) - committed
+  - `config.json` (email, SMTP, branding, schedule) - gitignored
+  - `config.example.json` (template) - committed
   - `.env` (SMTP credentials only) - gitignored
   - `.env.example` (template) - committed
-- **Template**: `newsletter-template-email.html`
-- **Prompt**: `newsletter-prompt.md`
+- **Template**: `template.html`
+- **Prompt**: `prompt.md`
 - **Local Claude settings**: `.claude/settings.json`
 
 ## Debugging
@@ -353,7 +353,7 @@ When working with this project:
 4. **Respect permissions**: The `.claude/settings.json` files are carefully configured
 5. **Update documentation**: Keep README.md and CLAUDE.md in sync with changes
 6. **Configuration files**:
-   - `newsletter-config.json` - Email addresses, SMTP server/port, branding, schedule, execution settings
+   - `config.json` - Email addresses, SMTP server/port, branding, schedule, execution settings
    - `.env` - SMTP username/password only
 7. **Use relative paths**: Keep project portable
 8. **Example files**: Keep `.example` files updated when changing configuration structure
