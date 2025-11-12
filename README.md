@@ -213,14 +213,14 @@ Configure in `newsletters/{name}/config.json` under the `execution` section.
 
 ## Permissions
 
-### Global Permissions
-
-Claude Code needs global permissions in `~/.claude/settings.json`:
+The project uses local permissions (`.claude/settings.json`) to allow Claude Code to operate autonomously:
 
 ```json
 {
   "permissions": {
     "allow": [
+      "Bash(python3:*)",
+      "Write",
       "WebSearch",
       "WebFetch"
     ]
@@ -228,22 +228,10 @@ Claude Code needs global permissions in `~/.claude/settings.json`:
 }
 ```
 
-### Local Permissions
-
-The project's `.claude/settings.json` allows:
-
-```json
-{
-  "permissions": {
-    "allow": [
-      "Bash(python3:*)",
-      "Write"
-    ]
-  }
-}
-```
-
-This allows Claude to create newsletter files and send emails without prompting.
+This allows Claude to:
+- Search the web and fetch content for research
+- Create newsletter HTML files
+- Send emails via Python scripts
 
 ## Common Issues
 

@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(python3:*)",
-      "Write"
+      "Write",
+      "WebSearch",
+      "WebFetch"
     ]
   }
 }

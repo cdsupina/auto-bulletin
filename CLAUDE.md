@@ -153,25 +153,15 @@ auto-bulletin/
 
 ### Permissions
 
-**Global permissions** (`~/.claude/settings.json`):
-```json
-{
-  "permissions": {
-    "allow": [
-      "WebSearch",
-      "WebFetch"
-    ]
-  }
-}
-```
-
 **Local permissions** (`.claude/settings.json`):
 ```json
 {
   "permissions": {
     "allow": [
       "Bash(python3:*)",
-      "Write"
+      "Write",
+      "WebSearch",
+      "WebFetch"
     ]
   }
 }
@@ -181,6 +171,8 @@ These permissions allow Claude Code to:
 - Search the web and fetch content without prompting
 - Create newsletter HTML files in the `newsletters/{name}/output/` directory
 - Execute the Python email scripts
+
+**Note**: Local permissions are preferred over global permissions for better security. They limit these capabilities to this specific project directory, following the principle of least privilege. No global permissions in `~/.claude/settings.json` are required.
 
 ## How Claude Code Runs in Headless Mode
 
@@ -367,9 +359,9 @@ cp -r newsletters/example newsletters/your-name
 
 ### Issue: WebSearch permission denied
 
-**Cause**: Global permissions not configured
+**Cause**: Local permissions not configured
 
-**Solution**: Add WebSearch to `~/.claude/settings.json` allow list
+**Solution**: Add `"WebSearch"` and `"WebFetch"` to `.claude/settings.json` allow list in the project directory
 
 ### Issue: Can't write newsletter file
 
