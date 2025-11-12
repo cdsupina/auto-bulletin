@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """
 Email sender script for daily newsletter
-Reads newsletter content from stdin or a file and sends via SMTP
+Usage: send_email.py <config_file> <newsletter_file>
+Reads newsletter content from a file and sends via SMTP using specified config
 """
 
 import smtplib
@@ -51,14 +52,22 @@ def send_email(subject, body, to_email, from_email, smtp_server, smtp_port, smtp
         return False
 
 def main():
+    # Check for required arguments
+    if len(sys.argv) < 3:
+        print("Usage: send_email.py <config_file> <newsletter_file>", file=sys.stderr)
+        print("Example: send_email.py newsletters/personal/config.json newsletters/personal/output/newsletter-2025-11-11.html", file=sys.stderr)
+        sys.exit(1)
+
+    # Get config file path from argument
+    config_file = sys.argv[1]
+    newsletter_file = sys.argv[2]
+
     # Load newsletter configuration
-    config_file = os.path.join(os.path.dirname(__file__), 'config.json')
     try:
         with open(config_file, 'r') as f:
             config = json.load(f)
     except FileNotFoundError:
         print(f"Error: Configuration file not found: {config_file}", file=sys.stderr)
-        print("Please create config.json from config.example.json", file=sys.stderr)
         sys.exit(1)
     except json.JSONDecodeError as e:
         print(f"Error: Invalid JSON in configuration file: {e}", file=sys.stderr)
@@ -67,36 +76,31 @@ def main():
     # Get email configuration from config file
     to_email = config.get('email', {}).get('to')
     from_email = config.get('email', {}).get('from')
-    smtp_server = config.get('smtp', {}).get('server')
-    smtp_port = config.get('smtp', {}).get('port', 587)
 
-    # Get SMTP credentials from environment variables (still secret)
+    # Get SMTP configuration from environment variables
+    smtp_server = os.getenv('SMTP_SERVER')
+    smtp_port = int(os.getenv('SMTP_PORT', '587'))
     smtp_username = os.getenv('SMTP_USERNAME')
     smtp_password = os.getenv('SMTP_PASSWORD')
 
     # Validate configuration
     if not all([to_email, from_email, smtp_server, smtp_username, smtp_password]):
         print("Error: Missing email configuration", file=sys.stderr)
-        print("Required in config.json: email.to, email.from, smtp.server", file=sys.stderr)
-        print("Required in .env: SMTP_USERNAME, SMTP_PASSWORD", file=sys.stderr)
+        print("Required in config.json: email.to, email.from", file=sys.stderr)
+        print("Required in .env: SMTP_SERVER, SMTP_PORT, SMTP_USERNAME, SMTP_PASSWORD", file=sys.stderr)
         sys.exit(1)
 
-    # Get subject (default if not provided)
-    subject = os.getenv('EMAIL_SUBJECT', f"Daily Newsletter - {datetime.now().strftime('%Y-%m-%d')}")
+    # Get subject (use newsletter title if available, otherwise default)
+    newsletter_title = config.get('title', 'Newsletter')
+    subject = os.getenv('EMAIL_SUBJECT', f"{newsletter_title} - {datetime.now().strftime('%Y-%m-%d')}")
 
-    # Read email body from stdin or file
-    if len(sys.argv) > 1:
-        # Read from file
-        newsletter_file = sys.argv[1]
-        try:
-            with open(newsletter_file, 'r') as f:
-                body = f.read()
-        except FileNotFoundError:
-            print(f"Error: File not found: {newsletter_file}", file=sys.stderr)
-            sys.exit(1)
-    else:
-        # Read from stdin
-        body = sys.stdin.read()
+    # Read email body from file
+    try:
+        with open(newsletter_file, 'r') as f:
+            body = f.read()
+    except FileNotFoundError:
+        print(f"Error: File not found: {newsletter_file}", file=sys.stderr)
+        sys.exit(1)
 
     if not body.strip():
         print("Error: Email body is empty", file=sys.stderr)

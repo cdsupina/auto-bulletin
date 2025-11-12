@@ -1,274 +1,353 @@
 # The Auto Bulletin
 
-A fully automated newsletter system that uses Claude Code to search the web for topics you're interested in and emails you a daily newsletter with a custom dark-themed design.
+A fully automated multi-newsletter system that uses Claude Code to search the web for topics you're interested in and emails you customized newsletters with a dark-themed design.
+
+## Features
+
+- 🤖 **Autonomous**: Runs in Claude Code headless mode - no API credits needed
+- 📧 **Multiple Newsletters**: Run as many newsletters as you want with different recipients and topics
+- 🔍 **Deep Research**: Claude conducts thorough web research using WebSearch and WebFetch
+- ⏰ **Individual Schedules**: Each newsletter can run at different times
+- 🎨 **Email-Optimized**: Dark theme template designed for email clients
+- 🔄 **Retry Logic**: Automatic retries with configurable timeouts and alerts
+- 🔒 **Secure**: SMTP credentials in gitignored `.env` file
 
 ## How It Works
 
-This project uses **Claude Code's headless mode** to run autonomously on your Raspberry Pi:
+1. A cron job triggers the script daily for each newsletter
+2. Claude Code reads that newsletter's `interests.md` file
+3. Claude searches the web for recent news about those topics
+4. Claude compiles a formatted HTML newsletter
+5. Claude sends it via email to the configured recipient
 
-1. A cron job triggers the script daily
-2. Claude Code reads your `interests.md` file
-3. Claude searches the web for recent news about your topics
-4. Claude compiles a formatted newsletter
-5. Claude sends it to your email via SMTP
+## Quick Start
 
-No API credits needed - uses your local Claude Code installation!
+### 1. Configure SMTP (One-Time Setup)
 
-## Setup Instructions
-
-### 1. Configure Newsletter Settings
-
-Copy the example configuration file:
-
-```bash
-cp config.example.json config.json
-nano config.json
-```
-
-Edit the `email` and `smtp` sections with your details:
-- `email.to`: Your email address (where you'll receive the newsletter)
-- `email.from`: Sender email address
-- `email.alert`: Where to send failure alerts (optional, defaults to SMTP_USERNAME)
-- `smtp.server`: Your email provider's SMTP server
-- `smtp.port`: Usually 587 for TLS
-
-**For Gmail users:**
-- Use `smtp.gmail.com` and port `587`
-
-### 2. Configure SMTP Credentials
-
-Copy the example environment file and add your SMTP authentication:
+Create your SMTP configuration:
 
 ```bash
 cp .env.example .env
 nano .env
 ```
 
-Edit `.env` with your credentials:
+Edit `.env` with your email provider's settings:
+- `SMTP_SERVER`: Your SMTP server (e.g., `smtp.gmail.com`)
+- `SMTP_PORT`: Usually `587` for TLS
 - `SMTP_USERNAME`: Your email login
-- `SMTP_PASSWORD`: Your email password (or app password)
-- `CLAUDE_PATH`: Path to Claude binary (optional, defaults to 'claude')
+- `SMTP_PASSWORD`: Your email password or app password
+- `CLAUDE_PATH`: Path to Claude binary (optional, defaults to `claude`)
 
 **For Gmail users:**
-- You'll need an [App Password](https://myaccount.google.com/apppasswords) (not your regular password)
-- Enable 2-factor authentication first, then generate an app password at https://myaccount.google.com/apppasswords
+- Use an [App Password](https://support.google.com/accounts/answer/185833), not your regular password
+- Server: `smtp.gmail.com`, Port: `587`
 
-### 3. Add Your Interests
+### 2. Create Your First Newsletter
 
-Edit `interests.md` and add the topics you want to track:
+Copy the example template:
 
 ```bash
-nano interests.md
+cp -r newsletters/example newsletters/my-newsletter
+cd newsletters/my-newsletter
 ```
 
-Be specific about what you want to see in your newsletter. Examples:
-- Latest developments in Raspberry Pi 5
-- Python 3.12 new features
-- SpaceX launch updates
-- Linux security vulnerabilities
-- etc.
-
-### 4. Test It Manually
-
-Before setting up automation, test the script:
+Configure it:
 
 ```bash
-./run-newsletter.sh
-```
-
-Check the `logs/` directory for output and verify you received an email.
-
-### 5. Configure Newsletter Schedule
-
-Edit `config.json` to customize delivery schedule:
-
-```bash
+# Edit newsletter settings
 nano config.json
 ```
 
-This file contains:
-- Newsletter title and branding ("The Auto Bulletin by Metalmancy")
-- Footer text
-- Delivery schedule time and timezone
-- Execution settings: timeout duration, retry attempts, retry delays
+Update these fields:
+- **title**: Newsletter name (appears in email subject)
+- **subtitle**: Tagline or author attribution
+- **email.to**: Recipient email address
+- **email.from**: Sender email address
+- **email.alert**: Where to send failure alerts (optional)
+- **schedule.time**: When to run daily (HH:MM, 24-hour format)
+- **schedule.timezone**: Your timezone (e.g., `America/Chicago`)
+- **footer_brand**, **footer_tagline**, **footer_credits**: Branding text
 
-Then run the setup script to create a cron job:
-
-```bash
-./setup-cron.sh
-```
-
-To change the time later, just edit `schedule.time` in `config.json` and run `./setup-cron.sh` again.
-
-You can also override with a specific cron time:
+Add your topics:
 
 ```bash
-# For 7:30 AM
-./setup-cron.sh "30 7 * * *"
-
-# For 6:00 PM
-./setup-cron.sh "0 18 * * *"
+# Edit topics of interest
+nano interests.md
 ```
 
-### 6. Stop Automation (Optional)
+Be specific! Instead of "technology", try "Rust programming language updates and ecosystem news".
 
-To stop the daily newsletter:
+### 3. Test Your Newsletter
 
 ```bash
-./stop-cron.sh
+# From project root
+./run-newsletter.sh my-newsletter
 ```
 
-### 7. Verify Cron Job
+Check the output:
+```bash
+ls newsletters/my-newsletter/output/
+tail -f newsletters/my-newsletter/logs/newsletter-$(date +%Y-%m-%d).log
+```
 
-Check that your cron job is active:
+### 4. Schedule Automated Delivery
 
 ```bash
-crontab -l
+# Set up daily cron job
+./setup-cron.sh my-newsletter
+
+# View configured jobs
+crontab -l | grep auto-bulletin
+
+# Stop a newsletter
+./stop-cron.sh my-newsletter
 ```
 
-You should see an entry pointing to your `run-newsletter.sh` script.
+## Creating Additional Newsletters
 
-## Automatic Timeout & Retry
-
-The newsletter system includes built-in reliability features:
-
-**Timeout Protection:**
-- Each newsletter generation has a 15-minute timeout (configurable)
-- Prevents hung processes from blocking future runs
-- Automatically kills and retries if Claude Code hangs
-
-**Automatic Retries:**
-- Up to 3 attempts per day (configurable)
-- 5-minute delay between retries (configurable)
-- Handles transient API issues automatically
-
-**Failure Alerts:**
-- If all retry attempts fail, sends an alert email
-- Alert goes to `email.alert` (or SMTP_USERNAME if not set)
-- Includes failure details and log file location
-
-**Configuration:**
-Edit the `execution` section in `config.json`:
-```json
-"execution": {
-  "timeout_minutes": 15,
-  "max_retries": 3,
-  "retry_delay_minutes": 5
-}
-```
-
-**Note:** Gmail blocks self-sent emails to aliases, so set `email.alert` to a different address than `email.from`.
-
-## Troubleshooting
-
-### Check Logs
-
-View the latest log file:
+Want newsletters for different purposes or recipients? Just copy the template:
 
 ```bash
-ls -lt logs/
-cat logs/newsletter-YYYY-MM-DD.log
+# Create a work newsletter
+cp -r newsletters/example newsletters/work
+cd newsletters/work
+nano config.json      # Change email.to, title, schedule, etc.
+nano interests.md     # Add work-related topics
+cd ../..
+./run-newsletter.sh work
+./setup-cron.sh work
+
+# Create a family newsletter
+cp -r newsletters/example newsletters/family
+# ... configure and schedule
 ```
 
-### Cron Environment Issues
-
-The script is already configured with the full path to Claude Code. If you move Claude Code or install it elsewhere, you'll need to update the path in `run-newsletter.sh`.
-
-### Claude Code Not Installed
-
-Make sure Claude Code is installed and accessible:
-
-```bash
-claude --version
-```
-
-If not installed, visit: https://code.claude.com/docs/
-
-### Google Workspace "Send mail as" Setup
-
-If using a Google Workspace email with an alternate address (like sending from newsletter@domain.com while authenticating as user@domain.com):
-
-1. **Enable in Admin Console:**
-   - Apps → Google Workspace → Gmail → End User Access
-   - Enable "Allow per-user outbound gateways"
-
-2. **Add "Send mail as" in Gmail:**
-   - Log into Gmail as your main account
-   - Settings → Accounts and Import → Send mail as
-   - Add your alternate email address
-   - It should auto-configure without requiring SMTP details
-
-## Manual Run
-
-To generate and send a newsletter immediately:
-
-```bash
-./run-newsletter.sh
-```
-
-## Customization
-
-### Change Newsletter Frequency
-
-Edit the cron schedule:
-
-```bash
-crontab -e
-```
-
-Cron syntax: `minute hour day month weekday`
-- Daily at 8 AM: `0 8 * * *`
-- Twice daily (8 AM & 8 PM): Add two lines: `0 8 * * *` and `0 20 * * *`
-- Weekdays only at 7 AM: `0 7 * * 1-5`
-
-### Modify Newsletter Format
-
-The newsletter uses an email-optimized HTML template with the Metalmancy dark theme:
-- Edit `template.html` to change the design
-- Edit `config.json` to change branding text
-- Edit `prompt.md` to customize the research instructions
+Each newsletter is completely independent:
+- Different recipients
+- Different topics
+- Different schedules
+- Different branding
 
 ## Project Structure
 
 ```
 auto-bulletin/
-├── interests.md                     # Your topics (edit this!)
-├── config.json                      # Newsletter settings (create from .example.json)
-├── config.example.json              # Example configuration with placeholders
-├── template.html                    # Email-optimized HTML template
-├── prompt.md                        # Instructions for Claude Code
-├── .env                             # SMTP credentials (create from .env.example)
-├── .env.example                     # Example credentials
-├── run-newsletter.sh                # Main automation script with timeout/retry
-├── send_email.py                    # Email sending script
-├── send_alert.py                    # Failure notification script
-├── setup-cron.sh                    # Cron job setup script
-├── stop-cron.sh                     # Stop cron job script
-├── .claude/                         # Local Claude Code permissions
-│   └── settings.json                # Write and Bash permissions
-├── newsletters/                     # Saved newsletters (date-stamped HTML files)
-├── logs/                            # Daily logs
-├── README.md                        # This file
-└── CLAUDE.md                        # Documentation for Claude Code
+├── .env                       # SMTP config (gitignored, create from .env.example)
+├── .env.example               # SMTP config template
+├── run-newsletter.sh          # Main script (takes newsletter name)
+├── send_email.py              # Email sender
+├── send_alert.py              # Failure alert sender
+├── setup-cron.sh              # Cron job setup (takes newsletter name)
+├── stop-cron.sh               # Cron job removal (takes newsletter name)
+├── prompt.md                  # Claude instruction template
+├── template.html              # HTML email template
+├── newsletters/
+│   ├── example/               # Template for new newsletters
+│   │   ├── config.json        # Newsletter settings template
+│   │   ├── interests.md       # Interests template
+│   │   ├── output/            # Generated newsletters go here
+│   │   └── logs/              # Execution logs go here
+│   └── your-newsletter/       # Your actual newsletters (gitignored)
+│       ├── config.json
+│       ├── interests.md
+│       ├── output/
+│       └── logs/
+├── CLAUDE.md                  # Architecture documentation
+└── README.md                  # This file
+```
+
+## Newsletter Configuration
+
+Each newsletter's `config.json` contains:
+
+```json
+{
+  "title": "Newsletter Title",
+  "subtitle": "by Your Name",
+  "footer_brand": "YOUR BRAND",
+  "footer_tagline": "Your tagline here",
+  "footer_credits": "Generated with Claude Code",
+  "email": {
+    "to": "recipient@example.com",
+    "from": "sender@example.com",
+    "alert": "admin@example.com"
+  },
+  "schedule": {
+    "time": "08:00",
+    "timezone": "America/Chicago"
+  },
+  "execution": {
+    "timeout_minutes": 15,
+    "max_retries": 3,
+    "retry_delay_minutes": 5
+  }
+}
+```
+
+## Interests File Format
+
+The `interests.md` file uses free-form markdown. Be specific for better results!
+
+**Good examples:**
+- "Rust programming language: new releases, popular crates, async programming"
+- "AI: Large language models, new model releases, RAG techniques"
+- "Kubernetes: new features, interesting use cases, ecosystem tools"
+
+**Less effective:**
+- "technology"
+- "programming"
+- "news"
+
+You can organize by categories, use lists, or write paragraphs. See `newsletters/example/interests.md` for a template.
+
+## Timeout and Retry Mechanism
+
+The system includes automatic timeout and retry:
+
+- **Timeout**: Each run has a configurable timeout (default 15 minutes)
+- **Retries**: Failed attempts automatically retry (default 3 attempts)
+- **Delay**: Configurable delay between retries (default 5 minutes)
+- **Alerts**: Email sent if all retries fail
+
+Configure in `newsletters/{name}/config.json` under the `execution` section.
+
+## Permissions
+
+### Global Permissions
+
+Claude Code needs global permissions in `~/.claude/settings.json`:
+
+```json
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch"
+    ]
+  }
+}
+```
+
+### Local Permissions
+
+The project's `.claude/settings.json` allows:
+
+```json
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3:*)",
+      "Write"
+    ]
+  }
+}
+```
+
+This allows Claude to create newsletter files and send emails without prompting.
+
+## Common Issues
+
+### "Error: Newsletter name required"
+
+Scripts now require a newsletter name:
+```bash
+./run-newsletter.sh my-newsletter
+./setup-cron.sh my-newsletter
+./stop-cron.sh my-newsletter
+```
+
+### "Error: Newsletter directory not found"
+
+Check available newsletters:
+```bash
+ls -d newsletters/*/
+```
+
+### "Error: Configuration file not found"
+
+Create `config.json` from the template:
+```bash
+cp newsletters/example/config.json newsletters/my-newsletter/config.json
+```
+
+### Newsletter not arriving
+
+Check the log:
+```bash
+tail -f newsletters/my-newsletter/logs/newsletter-$(date +%Y-%m-%d).log
+```
+
+Common issues:
+- SMTP credentials incorrect in `.env`
+- Wrong email address in `config.json`
+- Gmail blocking the app password (check Gmail security settings)
+
+### SMTP Authentication Error
+
+For Gmail:
+1. Enable 2-factor authentication
+2. Generate an [App Password](https://support.google.com/accounts/answer/185833)
+3. Use the app password in `.env`, not your regular password
+
+### Wrong sender address in Gmail
+
+Google Workspace may override the From header. To fix:
+1. Enable "Allow per-user outbound gateways" in Admin Console
+2. Add alternate address as "Send mail as" in Gmail settings
+
+## Managing Multiple Newsletters
+
+```bash
+# List all newsletters
+ls -d newsletters/*/
+
+# View all cron jobs
+crontab -l | grep auto-bulletin
+
+# Run a specific newsletter manually
+./run-newsletter.sh newsletter-name
+
+# Stop a specific newsletter
+./stop-cron.sh newsletter-name
+
+# View all configured newsletters (without argument)
+./stop-cron.sh
 ```
 
 ## Security Notes
 
-- Keep your `.env` and `config.json` files private (never commit to git)
-- Use app passwords instead of your main email password
-- Only commit the `.example` files with placeholder values
+- Keep `.env` file private (contains SMTP credentials)
+- Each newsletter's `config.json` and `interests.md` are gitignored
+- Only the `newsletters/example/` template is tracked in git
+- Use app passwords instead of main email passwords
 
 ## Requirements
 
-- Raspberry Pi (or any Linux system) with Claude Code installed
-- Internet connection
-- Email account with SMTP access
-- Cron (included in most Linux distributions)
+- Claude Code (local installation)
+- Python 3
+- Bash shell
+- SMTP email account (Gmail, etc.)
+- Cron (for automated delivery)
 
-## Support
+## Customization
 
-For issues with:
-- **Claude Code**: https://github.com/anthropics/claude-code/issues
-- **This project**: Check the logs in `logs/` directory first
+### Modify Newsletter Format
 
-Enjoy your automated daily newsletter!
+- Edit `template.html` to change the design
+- Edit newsletter `config.json` to change branding text
+- Edit `prompt.md` to customize research instructions
+
+### Change Schedule
+
+Edit `schedule.time` and `schedule.timezone` in the newsletter's `config.json`, then:
+```bash
+./setup-cron.sh newsletter-name
+```
+
+## Contributing
+
+This is a personal automation project, but feel free to fork and adapt for your needs!
+
+## License
+
+MIT License - See LICENSE file for details

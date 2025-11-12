@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """
 Alert email sender for newsletter generation failures
-Sends a notification to the sender when newsletter generation fails after all retries
+Usage: send_alert.py <config_file> <date> <attempts> <timeout_minutes> <log_file>
+Sends a notification when newsletter generation fails after all retries
 """
 
 import smtplib
@@ -39,14 +40,24 @@ def send_alert(subject, body, to_email, from_email, smtp_server, smtp_port, smtp
         return False
 
 def main():
+    # Check for required arguments
+    if len(sys.argv) < 6:
+        print("Usage: send_alert.py <config_file> <date> <attempts> <timeout_minutes> <log_file>", file=sys.stderr)
+        sys.exit(1)
+
+    # Get arguments
+    config_file = sys.argv[1]
+    date = sys.argv[2]
+    attempts = sys.argv[3]
+    timeout_minutes = sys.argv[4]
+    log_file = sys.argv[5]
+
     # Load newsletter configuration
-    config_file = os.path.join(os.path.dirname(__file__), 'config.json')
     try:
         with open(config_file, 'r') as f:
             config = json.load(f)
     except FileNotFoundError:
         print(f"Error: Configuration file not found: {config_file}", file=sys.stderr)
-        print("Please create config.json from config.example.json", file=sys.stderr)
         sys.exit(1)
     except json.JSONDecodeError as e:
         print(f"Error: Invalid JSON in configuration file: {e}", file=sys.stderr)
@@ -55,10 +66,10 @@ def main():
     # Get email configuration from config file
     from_email = config.get('email', {}).get('from')
     alert_email = config.get('email', {}).get('alert')
-    smtp_server = config.get('smtp', {}).get('server')
-    smtp_port = config.get('smtp', {}).get('port', 587)
 
-    # Get SMTP credentials from environment variables (still secret)
+    # Get SMTP configuration from environment variables
+    smtp_server = os.getenv('SMTP_SERVER')
+    smtp_port = int(os.getenv('SMTP_PORT', '587'))
     smtp_username = os.getenv('SMTP_USERNAME')
     smtp_password = os.getenv('SMTP_PASSWORD')
 
@@ -69,21 +80,14 @@ def main():
     # Validate configuration
     if not all([from_email, alert_email, smtp_server, smtp_username, smtp_password]):
         print("Error: Missing email configuration", file=sys.stderr)
-        print("Required in config.json: email.from, smtp.server", file=sys.stderr)
-        print("Required in .env: SMTP_USERNAME, SMTP_PASSWORD", file=sys.stderr)
+        print("Required in config.json: email.from", file=sys.stderr)
+        print("Required in .env: SMTP_SERVER, SMTP_PORT, SMTP_USERNAME, SMTP_PASSWORD", file=sys.stderr)
         sys.exit(1)
 
-    # Get failure details from command line arguments
-    if len(sys.argv) < 4:
-        print("Usage: send_alert.py <date> <attempts> <timeout_minutes> <log_file>", file=sys.stderr)
-        sys.exit(1)
+    # Get newsletter name from config if available
+    newsletter_title = config.get('title', 'Newsletter')
 
-    date = sys.argv[1]
-    attempts = sys.argv[2]
-    timeout_minutes = sys.argv[3]
-    log_file = sys.argv[4]
-
-    subject = f"Newsletter Generation Failed - {date}"
+    subject = f"{newsletter_title} Generation Failed - {date}"
     body = f"""Newsletter generation failed after all retry attempts.
 
 Date: {date}

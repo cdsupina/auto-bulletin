@@ -1,17 +1,46 @@
 #!/bin/bash
 
-# Daily Newsletter Automation Script with Timeout and Retry
-# This script uses Claude Code in headless mode to generate and send your daily newsletter
+# Multi-Newsletter Automation Script with Timeout and Retry
+# Usage: ./run-newsletter.sh <newsletter-name>
+# Example: ./run-newsletter.sh personal
 
-# Change to the project directory
+# Check for newsletter name argument
+if [ -z "$1" ]; then
+    echo "Error: Newsletter name required"
+    echo "Usage: $0 <newsletter-name>"
+    echo "Example: $0 personal"
+    exit 1
+fi
+
+NEWSLETTER_NAME="$1"
+
+# Change to the script directory (project root)
 cd "$(dirname "$0")"
 
-# Load environment variables
+# Validate newsletter directory exists
+NEWSLETTER_DIR="newsletters/$NEWSLETTER_NAME"
+if [ ! -d "$NEWSLETTER_DIR" ]; then
+    echo "Error: Newsletter directory not found: $NEWSLETTER_DIR"
+    echo "Available newsletters:"
+    ls -d newsletters/*/ 2>/dev/null | xargs -n 1 basename || echo "  (none)"
+    exit 1
+fi
+
+# Load environment variables from project root
 if [ -f .env ]; then
     export $(cat .env | grep -v '^#' | xargs)
 fi
 
-# Read configuration from config.json
+# Path to newsletter config
+CONFIG_FILE="$NEWSLETTER_DIR/config.json"
+
+# Verify config exists
+if [ ! -f "$CONFIG_FILE" ]; then
+    echo "Error: Configuration file not found: $CONFIG_FILE"
+    exit 1
+fi
+
+# Read configuration from newsletter's config.json
 if ! command -v python3 &> /dev/null; then
     echo "Error: python3 is required to read configuration"
     exit 1
@@ -22,7 +51,7 @@ CONFIG=$(python3 -c "
 import json
 import sys
 try:
-    with open('config.json', 'r') as f:
+    with open('$CONFIG_FILE', 'r') as f:
         config = json.load(f)
     exec_config = config.get('execution', {})
     print(f\"{exec_config.get('timeout_minutes', 15)}\")
@@ -42,13 +71,25 @@ RETRY_DELAY_MINUTES=$(echo "$CONFIG" | sed -n '3p')
 TIMEOUT_SECONDS=$((TIMEOUT_MINUTES * 60))
 RETRY_DELAY_SECONDS=$((RETRY_DELAY_MINUTES * 60))
 
-# Log file
+# Set up paths
 TODAY=$(date +%Y-%m-%d)
-LOG_FILE="logs/newsletter-$TODAY.log"
-mkdir -p logs
+OUTPUT_DIR="$NEWSLETTER_DIR/output"
+LOG_DIR="$NEWSLETTER_DIR/logs"
+LOG_FILE="$LOG_DIR/newsletter-$TODAY.log"
+INTERESTS_FILE="$NEWSLETTER_DIR/interests.md"
 
-# Read prompt from file
-PROMPT=$(cat prompt.md)
+# Create directories if they don't exist
+mkdir -p "$OUTPUT_DIR" "$LOG_DIR"
+
+# Verify interests file exists
+if [ ! -f "$INTERESTS_FILE" ]; then
+    echo "Error: Interests file not found: $INTERESTS_FILE" | tee -a "$LOG_FILE"
+    exit 1
+fi
+
+# Read prompt template and substitute placeholders
+PROMPT_TEMPLATE=$(cat prompt.md)
+PROMPT=$(echo "$PROMPT_TEMPLATE" | sed "s|{{INTERESTS_FILE}}|$INTERESTS_FILE|g" | sed "s|{{OUTPUT_DIR}}|$OUTPUT_DIR|g" | sed "s|{{CONFIG_FILE}}|$CONFIG_FILE|g" | sed "s|{{TEMPLATE_FILE}}|template.html|g")
 
 # Use Claude path from environment or default to 'claude'
 CLAUDE_CMD="${CLAUDE_PATH:-claude}"
@@ -58,10 +99,13 @@ run_claude_with_timeout() {
     local attempt=$1
 
     echo "========================================" | tee -a "$LOG_FILE"
-    echo "Newsletter generation attempt $attempt of $MAX_RETRIES" | tee -a "$LOG_FILE"
+    echo "Newsletter: $NEWSLETTER_NAME" | tee -a "$LOG_FILE"
+    echo "Generation attempt $attempt of $MAX_RETRIES" | tee -a "$LOG_FILE"
     echo "Started at $(date)" | tee -a "$LOG_FILE"
     echo "Timeout: $TIMEOUT_MINUTES minutes" | tee -a "$LOG_FILE"
-    echo "Configuration: config.json" | tee -a "$LOG_FILE"
+    echo "Configuration: $CONFIG_FILE" | tee -a "$LOG_FILE"
+    echo "Interests: $INTERESTS_FILE" | tee -a "$LOG_FILE"
+    echo "Output: $OUTPUT_DIR" | tee -a "$LOG_FILE"
     echo "========================================" | tee -a "$LOG_FILE"
 
     # Run Claude with timeout
@@ -126,7 +170,7 @@ else
     echo "========================================" | tee -a "$LOG_FILE"
 
     # Send alert email
-    python3 send_alert.py "$TODAY" "$MAX_RETRIES" "$TIMEOUT_MINUTES" "$(pwd)/$LOG_FILE" 2>&1 | tee -a "$LOG_FILE"
+    python3 send_alert.py "$CONFIG_FILE" "$TODAY" "$MAX_RETRIES" "$TIMEOUT_MINUTES" "$(pwd)/$LOG_FILE" 2>&1 | tee -a "$LOG_FILE"
 
     exit 1
 fi

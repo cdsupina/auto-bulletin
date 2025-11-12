@@ -1,17 +1,12 @@
 # Environment variables (contains sensitive credentials)
 .env
 
-# Newsletter configuration (contains email addresses and SMTP settings)
-config.json
+# Newsletter-specific files (config, interests, generated newsletters, logs)
+# Ignore all newsletters except the example template
+newsletters/*
 
-# Personal interests file
-interests.md
-
-# Generated newsletters
-newsletters/
-
-# Log files
-logs/
+# But track the example template
+!newsletters/example/
 
 # Python cache
 __pycache__/
