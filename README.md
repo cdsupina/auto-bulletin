@@ -15,7 +15,7 @@ A fully automated multi-newsletter system that uses Claude Code to search the we
 ## How It Works
 
 1. A cron job triggers the script daily for each newsletter
-2. Claude Code reads that newsletter's `interests.md` file
+2. Claude Code reads that newsletter's `topics.md` file
 3. Claude searches the web for recent news about those topics
 4. Claude compiles a formatted HTML newsletter
 5. Claude sends it via email to the configured recipient
@@ -72,7 +72,7 @@ Add your topics:
 
 ```bash
 # Edit topics of interest
-nano interests.md
+nano topics.md
 ```
 
 Be specific! Instead of "technology", try "Rust programming language updates and ecosystem news".
@@ -112,7 +112,7 @@ Want newsletters for different purposes or recipients? Just copy the template:
 cp -r newsletters/example newsletters/work
 cd newsletters/work
 nano config.json      # Change email.to, title, schedule, etc.
-nano interests.md     # Add work-related topics
+nano topics.md        # Add work-related topics
 cd ../..
 ./run-newsletter.sh work
 ./setup-cron.sh work
@@ -144,12 +144,12 @@ auto-bulletin/
 ├── newsletters/
 │   ├── example/               # Template for new newsletters
 │   │   ├── config.json        # Newsletter settings template
-│   │   ├── interests.md       # Interests template
+│   │   ├── topics.md          # Topics template
 │   │   ├── output/            # Generated newsletters go here
 │   │   └── logs/              # Execution logs go here
 │   └── your-newsletter/       # Your actual newsletters (gitignored)
 │       ├── config.json
-│       ├── interests.md
+│       ├── topics.md
 │       ├── output/
 │       └── logs/
 ├── CLAUDE.md                  # Architecture documentation
@@ -184,9 +184,9 @@ Each newsletter's `config.json` contains:
 }
 ```
 
-## Interests File Format
+## Topics File Format
 
-The `interests.md` file uses free-form markdown. Be specific for better results!
+The `topics.md` file uses free-form markdown. Be specific for better results!
 
 **Good examples:**
 - "Rust programming language: new releases, popular crates, async programming"
@@ -198,7 +198,7 @@ The `interests.md` file uses free-form markdown. Be specific for better results!
 - "programming"
 - "news"
 
-You can organize by categories, use lists, or write paragraphs. See `newsletters/example/interests.md` for a template.
+You can organize by categories, use lists, or write paragraphs. See `newsletters/example/topics.md` for a template.
 
 ## Timeout and Retry Mechanism
 
@@ -317,7 +317,7 @@ crontab -l | grep auto-bulletin
 ## Security Notes
 
 - Keep `.env` file private (contains SMTP credentials)
-- Each newsletter's `config.json` and `interests.md` are gitignored
+- Each newsletter's `config.json` and `topics.md` are gitignored
 - Only the `newsletters/example/` template is tracked in git
 - Use app passwords instead of main email passwords
 

@@ -76,20 +76,20 @@ TODAY=$(date +%Y-%m-%d)
 OUTPUT_DIR="$NEWSLETTER_DIR/output"
 LOG_DIR="$NEWSLETTER_DIR/logs"
 LOG_FILE="$LOG_DIR/newsletter-$TODAY.log"
-INTERESTS_FILE="$NEWSLETTER_DIR/interests.md"
+TOPICS_FILE="$NEWSLETTER_DIR/topics.md"
 
 # Create directories if they don't exist
 mkdir -p "$OUTPUT_DIR" "$LOG_DIR"
 
-# Verify interests file exists
-if [ ! -f "$INTERESTS_FILE" ]; then
-    echo "Error: Interests file not found: $INTERESTS_FILE" | tee -a "$LOG_FILE"
+# Verify topics file exists
+if [ ! -f "$TOPICS_FILE" ]; then
+    echo "Error: Topics file not found: $TOPICS_FILE" | tee -a "$LOG_FILE"
     exit 1
 fi
 
 # Read prompt template and substitute placeholders
 PROMPT_TEMPLATE=$(cat prompt.md)
-PROMPT=$(echo "$PROMPT_TEMPLATE" | sed "s|{{INTERESTS_FILE}}|$INTERESTS_FILE|g" | sed "s|{{OUTPUT_DIR}}|$OUTPUT_DIR|g" | sed "s|{{CONFIG_FILE}}|$CONFIG_FILE|g" | sed "s|{{TEMPLATE_FILE}}|template.html|g")
+PROMPT=$(echo "$PROMPT_TEMPLATE" | sed "s|{{TOPICS_FILE}}|$TOPICS_FILE|g" | sed "s|{{OUTPUT_DIR}}|$OUTPUT_DIR|g" | sed "s|{{CONFIG_FILE}}|$CONFIG_FILE|g" | sed "s|{{TEMPLATE_FILE}}|template.html|g")
 
 # Use Claude path from environment or default to 'claude'
 CLAUDE_CMD="${CLAUDE_PATH:-claude}"
@@ -104,7 +104,7 @@ run_claude_with_timeout() {
     echo "Started at $(date)" | tee -a "$LOG_FILE"
     echo "Timeout: $TIMEOUT_MINUTES minutes" | tee -a "$LOG_FILE"
     echo "Configuration: $CONFIG_FILE" | tee -a "$LOG_FILE"
-    echo "Interests: $INTERESTS_FILE" | tee -a "$LOG_FILE"
+    echo "Topics: $TOPICS_FILE" | tee -a "$LOG_FILE"
     echo "Output: $OUTPUT_DIR" | tee -a "$LOG_FILE"
     echo "========================================" | tee -a "$LOG_FILE"
 

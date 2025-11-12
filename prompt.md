@@ -1,6 +1,6 @@
 Please perform the following task:
 
-1. Read the file {{INTERESTS_FILE}} to understand what topics I'm interested in
+1. Read the file {{TOPICS_FILE}} to understand what topics I'm interested in
 
 2. Check past newsletters to avoid repetition:
    - Read the 3 most recent newsletter files in {{OUTPUT_DIR}}

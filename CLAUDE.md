@@ -5,7 +5,7 @@ This document explains how this project uses Claude Code and provides guidance f
 ## Project Overview
 
 An automated multi-newsletter system that uses Claude Code in headless mode to:
-1. Read user interests from individual `interests.md` files
+1. Read user interests from individual `topics.md` files
 2. Conduct thorough web research on those topics using WebSearch and WebFetch
 3. Compile findings into email-optimized HTML newsletters with custom branding
 4. Send via email using SMTP
@@ -58,7 +58,7 @@ An automated multi-newsletter system that uses Claude Code in headless mode to:
 
 6. **prompt.md** - Instructions template for Claude Code
    - Contains the detailed prompt that Claude follows
-   - Uses placeholders: `{{INTERESTS_FILE}}`, `{{OUTPUT_DIR}}`, `{{CONFIG_FILE}}`, `{{TEMPLATE_FILE}}`
+   - Uses placeholders: `{{TOPICS_FILE}}`, `{{OUTPUT_DIR}}`, `{{CONFIG_FILE}}`, `{{TEMPLATE_FILE}}`
    - Placeholders are substituted by run-newsletter.sh before passing to Claude
    - Specifies research depth and quality expectations
 
@@ -76,7 +76,7 @@ An automated multi-newsletter system that uses Claude Code in headless mode to:
    - Execution settings: timeout, max retries, retry delay
 
 9. **newsletters/example/** - Template directory (tracked in git)
-   - Contains `config.json` and `interests.md` templates
+   - Contains `config.json` and `topics.md` templates
    - Users copy this directory to create new newsletters
    - Only newsletter directory tracked in git (others gitignored)
 
@@ -116,11 +116,11 @@ CLAUDE_PATH=/path/to/claude              # Optional: Path to Claude Code binary
 }
 ```
 
-**`newsletters/{name}/interests.md`** - Per-newsletter topics:
+**`newsletters/{name}/topics.md`** - Per-newsletter topics:
 - Free-form markdown file
 - Claude reads this to understand what topics to search for
 - Should be specific and clear
-- Each newsletter can have completely different interests
+- Each newsletter can have completely different topics
 
 ### Directory Structure
 
@@ -138,12 +138,12 @@ auto-bulletin/
 ├── newsletters/
 │   ├── example/                  # Template (committed)
 │   │   ├── config.json
-│   │   ├── interests.md
+│   │   ├── topics.md
 │   │   ├── output/
 │   │   └── logs/
 │   └── {name}/                   # User newsletters (gitignored)
 │       ├── config.json
-│       ├── interests.md
+│       ├── topics.md
 │       ├── output/
 │       └── logs/
 ├── .claude/
@@ -189,12 +189,12 @@ When `run-newsletter.sh <name>` executes:
 1. **Load Configuration**:
    - Exports all `.env` variables (SMTP_SERVER, SMTP_PORT, SMTP_USERNAME, SMTP_PASSWORD)
    - Reads `newsletters/{name}/config.json` for execution settings
-   - Sets paths: OUTPUT_DIR, LOG_DIR, INTERESTS_FILE, CONFIG_FILE
+   - Sets paths: OUTPUT_DIR, LOG_DIR, TOPICS_FILE, CONFIG_FILE
 
 2. **Generate Prompt**:
    - Reads `prompt.md` template
    - Substitutes placeholders:
-     - `{{INTERESTS_FILE}}` → `newsletters/{name}/interests.md`
+     - `{{TOPICS_FILE}}` → `newsletters/{name}/topics.md`
      - `{{OUTPUT_DIR}}` → `newsletters/{name}/output`
      - `{{CONFIG_FILE}}` → `newsletters/{name}/config.json`
      - `{{TEMPLATE_FILE}}` → `template.html`
@@ -205,7 +205,7 @@ When `run-newsletter.sh <name>` executes:
    - Wrapped with timeout command (default 15 minutes)
 
 4. **Claude's Tasks**:
-   - Read interests from specified interests file
+   - Read topics from specified topics file
    - Check past 3 newsletters in output directory
    - Conduct thorough research using WebSearch and WebFetch
    - Read template and config files
@@ -237,7 +237,7 @@ cp -r newsletters/example newsletters/work
 # Configure
 cd newsletters/work
 nano config.json      # Set email.to, title, schedule
-nano interests.md     # Add topics
+nano topics.md        # Add topics
 cd ../..
 
 # Test
@@ -251,7 +251,7 @@ cd ../..
 
 Each newsletter has:
 - **Own config**: Different recipients, titles, schedules
-- **Own interests**: Completely different topics
+- **Own topics**: Completely different topics
 - **Own output**: Separate directory for generated newsletters
 - **Own logs**: Isolated execution logs
 - **Own cron job**: Individual schedule with unique identifier
@@ -274,7 +274,7 @@ This architecture allows:
 
 For each newsletter execution:
 
-1. **Read Interests**: Claude reads `newsletters/{name}/interests.md`
+1. **Read Topics**: Claude reads `newsletters/{name}/topics.md`
 2. **Check History**: Reviews past 3 newsletters in `newsletters/{name}/output/`
 3. **Deep Research**: Uses WebSearch and WebFetch to find recent news
    - Searches multiple angles and sources
@@ -421,7 +421,7 @@ cp -r newsletters/example newsletters/your-name
   - `.env.example` (template) - committed
   - `newsletters/{name}/config.json` (newsletter settings) - gitignored
   - `newsletters/example/config.json` (template) - committed
-- **Interests**: `newsletters/{name}/interests.md` - gitignored (except example)
+- **Topics**: `newsletters/{name}/topics.md` - gitignored (except example)
 - **Template**: `template.html` - committed
 - **Prompt**: `prompt.md` - committed
 - **Local Claude settings**: `.claude/settings.json` - gitignored
@@ -469,7 +469,7 @@ When working with this project:
    - `newsletters/{name}/config.json` - Email addresses, branding, schedule, execution settings (per-newsletter)
 7. **Use relative paths**: Keep project portable
 8. **Template pattern**: `newsletters/example/` is the only newsletter tracked in git
-9. **Newsletter independence**: Each newsletter is completely isolated (own config, interests, output, logs)
+9. **Newsletter independence**: Each newsletter is completely isolated (own config, topics, output, logs)
 
 ## Success Criteria
 
@@ -500,7 +500,7 @@ Any deviation indicates an issue that should be investigated via logs.
 ```
 
 Each runs independently with its own:
-- Topics (interests.md)
+- Topics (topics.md)
 - Recipient (config.json)
 - Schedule (config.json)
 - Output and logs
