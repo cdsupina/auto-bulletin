@@ -16,6 +16,8 @@ Please perform the following task:
    - Look for lesser-known but significant developments, not just mainstream headlines
    - Prioritize quality and depth over speed - take time to find genuinely valuable content
    - Aim for diverse sources across different publications and communities
+   - CRITICAL: When you fetch an article with WebFetch, record the EXACT URL you fetched - this is the URL you must use in the source link
+   - Prefer direct article links over homepages - only link to a homepage if that IS the actual source (e.g., a new product announcement on a company's main page)
 
 4. Read the newsletter template at {{TEMPLATE_FILE}} to understand the structure and style
 
@@ -31,9 +33,35 @@ Please perform the following task:
    - Replace {{FOOTER_CREDITS}} with the value from {{CONFIG_FILE}}
    - Use the section pattern from the template for each topic
    - Include appropriate emoji for each section (🦀 for Rust, 🤖 for AI, etc.)
-   - Each story should have: title (h3), content paragraph(s), and a source section
-   - IMPORTANT: Each story/update MUST include at least one source link in the source section
-   - Format sources as: <strong>Source:</strong> <a href="URL">Article Title - Publication Name</a>
+   - Each story can use one of two formats:
+     * PARAGRAPH FORMAT: For news articles, analysis, and general stories - includes title (h3), content paragraph(s), and a single source section at the bottom
+     * LIST FORMAT: For jobs, products, events, tools, or any content where you want to highlight 3-5 specific items with individual links - includes title (h3), optional intro paragraph, and then a list of items each with their own direct link
+   - Use the LIST FORMAT when:
+     * Presenting job openings (each job links to its posting)
+     * Listing products or tools (each links to its page)
+     * Highlighting events (each links to registration/details)
+     * Showcasing specific examples where readers benefit from direct links to each item
+     * The value is in the individual items rather than synthesizing them into a narrative
+   - For LIST FORMAT, use contextually appropriate link text:
+     * Job listings: "View listing →" or "Apply →"
+     * Products/Tools: "Learn more →" or "Visit site →"
+     * Events: "Register →" or "View event →"
+     * Articles/Resources: "Read more →"
+     * Choose the most natural phrasing for your specific content
+   - Use the PARAGRAPH FORMAT when:
+     * Covering news stories, updates, or announcements
+     * Providing analysis or context that connects multiple sources
+     * The narrative synthesis adds value beyond just listing items
+   - IMPORTANT: Each story/update MUST include at least one source link
+     * For PARAGRAPH FORMAT: Include a source section at the bottom with format: <strong>Source:</strong> <a href="URL">Article Title - Publication Name</a>
+     * For LIST FORMAT: Each list item has its own direct link (no separate source section needed)
+   - CRITICAL SOURCE LINK REQUIREMENTS:
+     * Every source link MUST be meaningful and allow the reader to verify/read more about the story
+     * Prefer specific article URLs (e.g., https://example.com/2025/11/article-name) over general pages
+     * The URL should be the exact same URL you used with WebFetch to read the content
+     * Homepage links are acceptable ONLY when the homepage itself is the source (e.g., a product launch page, official announcement page)
+     * AVOID linking to generic section pages, category pages, or homepages when a specific article exists
+     * Test: A reader clicking the link should land on content directly relevant to the story, with minimal extra navigation needed
    - DO NOT include a summary section at the end
    - It's okay to skip a topic section entirely if there is no genuinely new news for that topic
    - Use the <div class="divider"></div> between major topic sections for visual separation
