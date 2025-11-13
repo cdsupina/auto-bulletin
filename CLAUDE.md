@@ -28,7 +28,8 @@ An automated multi-newsletter system that uses Claude Code in headless mode to:
 
 2. **send_email.py** - Email delivery script
    - **Usage**: `send_email.py <config_file> <newsletter_file>`
-   - Reads email configuration (to, from, alert) from specified config.json
+   - Reads email configuration (to array, from, alert) from specified config.json
+   - Supports multiple recipients via email.to array
    - Reads SMTP configuration (server, port, credentials) from environment variables
    - Accepts newsletter HTML file path as argument
    - Sends via SMTP with TLS encryption
@@ -70,7 +71,7 @@ An automated multi-newsletter system that uses Claude Code in headless mode to:
 
 8. **newsletters/{name}/config.json** - Per-newsletter configuration (gitignored except example)
    - Newsletter title and subtitle
-   - Email addresses (to, from, alert)
+   - Email addresses (to array for multiple recipients, from, alert)
    - Footer branding and text
    - Schedule cron pattern and timezone
    - Execution settings: timeout, max retries, retry delay
@@ -100,7 +101,7 @@ CLAUDE_PATH=/path/to/claude              # Optional: Path to Claude Code binary
   "footer_tagline": "Your daily dose of news and updates",
   "footer_credits": "Generated with Claude Code",
   "email": {
-    "to": "recipient@example.com",
+    "to": ["recipient@example.com", "another@example.com"],
     "from": "sender@example.com",
     "alert": "admin@example.com"
   },

@@ -13,14 +13,14 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from datetime import datetime
 
-def send_email(subject, body, to_email, from_email, smtp_server, smtp_port, smtp_username, smtp_password):
-    """Send an email via SMTP"""
+def send_email(subject, body, to_emails, from_email, smtp_server, smtp_port, smtp_username, smtp_password):
+    """Send an email via SMTP to multiple recipients"""
     try:
         # Create message
         msg = MIMEMultipart('alternative')
         msg['Subject'] = subject
         msg['From'] = from_email
-        msg['To'] = to_email
+        msg['To'] = ', '.join(to_emails)  # Comma-separated for display
         msg['Date'] = datetime.now().strftime('%a, %d %b %Y %H:%M:%S %z')
 
         # Attach HTML content
@@ -35,8 +35,8 @@ def send_email(subject, body, to_email, from_email, smtp_server, smtp_port, smtp
             server.starttls()
             print(f"Logging in as {smtp_username}...", file=sys.stderr)
             server.login(smtp_username, smtp_password)
-            print(f"Sending email to {to_email}...", file=sys.stderr)
-            server.send_message(msg)
+            print(f"Sending email to {', '.join(to_emails)}...", file=sys.stderr)
+            server.sendmail(from_email, to_emails, msg.as_string())
             print("Email sent successfully!", file=sys.stderr)
             return True
 
@@ -74,8 +74,13 @@ def main():
         sys.exit(1)
 
     # Get email configuration from config file
-    to_email = config.get('email', {}).get('to')
+    to_emails = config.get('email', {}).get('to')
     from_email = config.get('email', {}).get('from')
+
+    # Validate to_emails is a list
+    if not isinstance(to_emails, list):
+        print("Error: email.to must be an array of email addresses", file=sys.stderr)
+        sys.exit(1)
 
     # Get SMTP configuration from environment variables
     smtp_server = os.getenv('SMTP_SERVER')
@@ -84,9 +89,9 @@ def main():
     smtp_password = os.getenv('SMTP_PASSWORD')
 
     # Validate configuration
-    if not all([to_email, from_email, smtp_server, smtp_username, smtp_password]):
+    if not all([to_emails, from_email, smtp_server, smtp_username, smtp_password]):
         print("Error: Missing email configuration", file=sys.stderr)
-        print("Required in config.json: email.to, email.from", file=sys.stderr)
+        print("Required in config.json: email.to (array), email.from", file=sys.stderr)
         print("Required in .env: SMTP_SERVER, SMTP_PORT, SMTP_USERNAME, SMTP_PASSWORD", file=sys.stderr)
         sys.exit(1)
 
@@ -110,7 +115,7 @@ def main():
     success = send_email(
         subject=subject,
         body=body,
-        to_email=to_email,
+        to_emails=to_emails,
         from_email=from_email,
         smtp_server=smtp_server,
         smtp_port=smtp_port,

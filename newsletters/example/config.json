@@ -5,7 +5,7 @@
     "footer_tagline": "Your daily dose of news and updates",
     "footer_credits": "Generated with Claude Code",
     "email": {
-        "to": "recipient@example.com",
+        "to": ["recipient@example.com"],
         "from": "sender@example.com",
         "alert": "admin@example.com"
     },
