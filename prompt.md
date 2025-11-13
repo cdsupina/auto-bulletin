@@ -23,7 +23,19 @@ Please perform the following task:
 
 5. Read the newsletter configuration at {{CONFIG_FILE}} to get branding values
 
-6. Compile the findings into a well-formatted HTML newsletter using the template structure:
+6. Determine the newsletter frequency from the cron schedule in {{CONFIG_FILE}}:
+   - Read the schedule.cron field (format: MINUTE HOUR DAY MONTH DAY-OF-WEEK)
+   - Determine the frequency based on the cron pattern:
+     * "* * * * *" or "0 8 * * *" = daily
+     * "0 8 * * 1,4" or similar with 2 specific days = twice weekly
+     * "0 8 * * 1-5" = weekdays (Monday through Friday)
+     * "0 8 * * 0" or single day = weekly
+     * Other patterns = use your best judgment
+   - Use this frequency accurately in the intro paragraph
+   - NEVER say "daily edition" if it's weekly, or "weekly edition" if it's daily
+   - Be precise with phrases like "your daily update", "this week's highlights", "your twice-weekly roundup", etc.
+
+7. Compile the findings into a well-formatted HTML newsletter using the template structure:
    - Replace {{TITLE}} with the value from {{CONFIG_FILE}}
    - Replace {{SUBTITLE}} with the value from {{CONFIG_FILE}}
    - Replace {{DATE}} with today's date in a readable format (e.g., "November 10, 2025")
@@ -70,14 +82,17 @@ Please perform the following task:
    - It's okay to skip a topic section entirely if there is no genuinely new news for that topic
    - Use the <div class="divider"></div> between major topic sections for visual separation
 
-7. Save the newsletter HTML to {{OUTPUT_DIR}}/newsletter-$(date +%Y-%m-%d).html
+8. Save the newsletter HTML to {{OUTPUT_DIR}}/newsletter-$(date +%Y-%m-%d).html
    - Always write/overwrite this file, even if it already exists
    - This is expected behavior - the script may be retrying or manually re-run
 
-8. Send the email using the existing send_email.py script:
+9. Send the email using the existing send_email.py script:
+   - IMPORTANT: You MUST run this command - do not skip this step
    - Run: python3 send_email.py {{CONFIG_FILE}} {{OUTPUT_DIR}}/newsletter-$(date +%Y-%m-%d).html
-   - The script will read configuration from the specified config file
+   - The script reads email addresses (to, from, alert) from {{CONFIG_FILE}}
+   - The script reads SMTP credentials (server, port, username, password) from environment variables that are already loaded
+   - If the script fails, report the error - do not silently skip sending
 
-9. Report success or any errors encountered
+10. Report success or any errors encountered
 
 Work autonomously and complete all steps. Do not ask for confirmation - always proceed with generating and overwriting the newsletter.

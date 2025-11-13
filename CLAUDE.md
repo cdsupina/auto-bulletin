@@ -44,8 +44,8 @@ An automated multi-newsletter system that uses Claude Code in headless mode to:
 
 4. **setup-cron.sh** - Automation setup
    - **Usage**: `./setup-cron.sh <newsletter-name> [cron-time]`
-   - Reads `schedule.time` and `schedule.timezone` from `newsletters/{name}/config.json`
-   - Converts to cron format (MINUTE HOUR * * *)
+   - Reads `schedule.cron` and `schedule.timezone` from `newsletters/{name}/config.json`
+   - Uses cron format directly (MINUTE HOUR DAY MONTH DAY-OF-WEEK)
    - Sets TZ environment variable in cron entry if timezone specified
    - Manages individual cron jobs per newsletter with unique identifiers
    - Allows manual override with cron syntax
@@ -72,7 +72,7 @@ An automated multi-newsletter system that uses Claude Code in headless mode to:
    - Newsletter title and subtitle
    - Email addresses (to, from, alert)
    - Footer branding and text
-   - Schedule time and timezone
+   - Schedule cron pattern and timezone
    - Execution settings: timeout, max retries, retry delay
 
 9. **newsletters/example/** - Template directory (tracked in git)
@@ -105,7 +105,7 @@ CLAUDE_PATH=/path/to/claude              # Optional: Path to Claude Code binary
     "alert": "admin@example.com"
   },
   "schedule": {
-    "time": "08:00",
+    "cron": "0 8 * * *",
     "timezone": "America/Chicago"
   },
   "execution": {
@@ -274,15 +274,16 @@ For each newsletter execution:
    - Prioritizes quality and depth over speed
    - Aims for diverse sources
 4. **Read Configuration**: Loads template and branding from files
-5. **Content Compilation**: Creates HTML newsletter with:
+5. **Determine Frequency**: Parses the cron schedule to determine newsletter frequency (daily, twice weekly, weekly, etc.) to use accurate language in the intro paragraph
+6. **Content Compilation**: Creates HTML newsletter with:
    - Email-compatible table-based layout
    - Dark Metalmancy theme (purple/gold colors)
    - Proper sections with emoji icons
    - 2-3 stories per topic with source links
    - No summary section at end
-6. **Save Newsletter**: Writes to `newsletters/{name}/output/newsletter-YYYY-MM-DD.html`
-7. **Send Email**: Executes `python3 send_email.py <config> <newsletter>`
-8. **Report Status**: Logs success or errors
+7. **Save Newsletter**: Writes to `newsletters/{name}/output/newsletter-YYYY-MM-DD.html`
+8. **Send Email**: Executes `python3 send_email.py <config> <newsletter>`
+9. **Report Status**: Logs success or errors
 
 ## Email Template Design
 

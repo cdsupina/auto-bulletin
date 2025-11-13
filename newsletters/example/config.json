@@ -10,7 +10,7 @@
         "alert": "admin@example.com"
     },
     "schedule": {
-        "time": "08:00",
+        "cron": "0 8 * * *",
         "timezone": "America/Chicago"
     },
     "execution": {

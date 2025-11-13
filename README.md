@@ -64,7 +64,7 @@ Update these fields:
 - **email.to**: Recipient email address
 - **email.from**: Sender email address
 - **email.alert**: Where to send failure alerts (optional)
-- **schedule.time**: When to run daily (HH:MM, 24-hour format)
+- **schedule.cron**: When to run (cron format, see below)
 - **schedule.timezone**: Your timezone (e.g., `America/Chicago`)
 - **footer_brand**, **footer_tagline**, **footer_credits**: Branding text
 
@@ -173,7 +173,7 @@ Each newsletter's `config.json` contains:
     "alert": "admin@example.com"
   },
   "schedule": {
-    "time": "08:00",
+    "cron": "0 8 * * *",
     "timezone": "America/Chicago"
   },
   "execution": {
@@ -183,6 +183,54 @@ Each newsletter's `config.json` contains:
   }
 }
 ```
+
+## Schedule Configuration (Cron Format)
+
+The `schedule.cron` field uses standard cron syntax for maximum flexibility:
+
+```
+MINUTE HOUR DAY MONTH DAY-OF-WEEK
+```
+
+Where:
+- **MINUTE**: 0-59
+- **HOUR**: 0-23 (0 = midnight, 23 = 11 PM)
+- **DAY**: 1-31 (day of month)
+- **MONTH**: 1-12
+- **DAY-OF-WEEK**: 0-7 (0 and 7 = Sunday, 1 = Monday, etc.)
+- **\***: Any value (wildcard)
+
+### Common Examples
+
+```json
+"schedule": {
+  "cron": "0 8 * * *",        // Daily at 8:00 AM
+  "timezone": "America/Chicago"
+}
+```
+
+```json
+"schedule": {
+  "cron": "0 8 * * 1,4",      // Monday and Thursday at 8:00 AM
+  "timezone": "America/Chicago"
+}
+```
+
+```json
+"schedule": {
+  "cron": "30 7 * * 1-5",     // Weekdays (Mon-Fri) at 7:30 AM
+  "timezone": "America/Chicago"
+}
+```
+
+```json
+"schedule": {
+  "cron": "0 19 * * 0",       // Weekly on Sunday at 7:00 PM
+  "timezone": "America/Chicago"
+}
+```
+
+**Important**: The newsletter intro will automatically reflect your schedule (e.g., "daily update" vs "weekly roundup"), so choose a cron pattern that matches how often you want to receive it.
 
 ## Topics File Format
 
@@ -327,10 +375,12 @@ crontab -l | grep auto-bulletin
 
 ### Change Schedule
 
-Edit `schedule.time` and `schedule.timezone` in the newsletter's `config.json`, then:
+Edit `schedule.cron` and `schedule.timezone` in the newsletter's `config.json`, then:
 ```bash
 ./setup-cron.sh newsletter-name
 ```
+
+See the "Schedule Configuration (Cron Format)" section above for examples.
 
 ## Contributing
 

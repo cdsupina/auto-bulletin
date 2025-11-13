@@ -45,25 +45,40 @@ fi
 
 echo "Setting up cron job for newsletter: $NEWSLETTER_NAME"
 
-# Load newsletter time and timezone from config file
-# Extract time from JSON using grep and sed
-NEWSLETTER_TIME=$(grep -o '"time"[[:space:]]*:[[:space:]]*"[^"]*"' "$CONFIG_FILE" | sed 's/.*"\([^"]*\)".*/\1/')
+# Load newsletter cron schedule and timezone from config file
+# Extract cron from JSON using grep and sed
+NEWSLETTER_CRON=$(grep -o '"cron"[[:space:]]*:[[:space:]]*"[^"]*"' "$CONFIG_FILE" | sed 's/.*"\([^"]*\)".*/\1/')
 NEWSLETTER_TZ=$(grep -o '"timezone"[[:space:]]*:[[:space:]]*"[^"]*"' "$CONFIG_FILE" | sed 's/.*"\([^"]*\)".*/\1/')
 
-if [ -n "$NEWSLETTER_TIME" ]; then
-    HOUR=$(echo "$NEWSLETTER_TIME" | cut -d: -f1)
-    MINUTE=$(echo "$NEWSLETTER_TIME" | cut -d: -f2)
-    DEFAULT_CRON_TIME="$MINUTE $HOUR * * *"
-    echo "Using time from config.json: $NEWSLETTER_TIME"
+if [ -z "$NEWSLETTER_CRON" ]; then
+    echo "Error: Missing 'schedule.cron' field in $CONFIG_FILE"
+    echo ""
+    echo "Your config file needs to be updated to use cron format."
+    echo "Please add a 'cron' field to the 'schedule' section:"
+    echo ""
+    echo "  \"schedule\": {"
+    echo "    \"cron\": \"0 8 * * *\","
+    echo "    \"timezone\": \"America/Chicago\""
+    echo "  }"
+    echo ""
+    echo "Common cron patterns:"
+    echo "  Daily at 8:00 AM:           0 8 * * *"
+    echo "  Mon & Thu at 7:30 AM:       30 7 * * 1,4"
+    echo "  Weekdays at 9:00 AM:        0 9 * * 1-5"
+    echo "  Weekly on Sunday at 7 PM:   0 19 * * 0"
+    echo ""
+    echo "Format: MINUTE HOUR DAY MONTH DAY-OF-WEEK"
+    echo "See README.md for more examples."
+    exit 1
+fi
 
-    if [ -n "$NEWSLETTER_TZ" ]; then
-        echo "Using timezone: $NEWSLETTER_TZ"
-    else
-        echo "No timezone found, using system default"
-    fi
+DEFAULT_CRON_TIME="$NEWSLETTER_CRON"
+echo "Using cron schedule from config.json: $NEWSLETTER_CRON"
+
+if [ -n "$NEWSLETTER_TZ" ]; then
+    echo "Using timezone: $NEWSLETTER_TZ"
 else
-    DEFAULT_CRON_TIME="0 8 * * *"
-    echo "No time found in config.json, using default: 8:00 AM"
+    echo "No timezone found, using system default"
 fi
 
 # Allow override via command line argument
@@ -91,17 +106,20 @@ fi
 
 echo ""
 echo "Cron job added successfully!"
-echo "Newsletter '$NEWSLETTER_NAME' will run daily at the specified time."
+echo "Newsletter '$NEWSLETTER_NAME' will run on schedule: $CRON_TIME"
 echo ""
 echo "Current cron entry:"
 crontab -l | grep -A 1 "$CRON_IDENTIFIER"
 echo ""
-echo "To modify the time or timezone:"
-echo "  1. Edit schedule.time and schedule.timezone in $CONFIG_FILE"
+echo "To modify the schedule or timezone:"
+echo "  1. Edit schedule.cron and schedule.timezone in $CONFIG_FILE"
 echo "  2. Run ./setup-cron.sh $NEWSLETTER_NAME again"
 echo ""
-echo "Or override with: ./setup-cron.sh $NEWSLETTER_NAME 'MINUTE HOUR * * *'"
-echo "Example for 7:30 AM: ./setup-cron.sh $NEWSLETTER_NAME '30 7 * * *'"
+echo "Or override with: ./setup-cron.sh $NEWSLETTER_NAME 'MINUTE HOUR DAY MONTH DAY-OF-WEEK'"
+echo "Examples:"
+echo "  Daily at 8:00 AM:           ./setup-cron.sh $NEWSLETTER_NAME '0 8 * * *'"
+echo "  Mon & Thu at 7:30 AM:       ./setup-cron.sh $NEWSLETTER_NAME '30 7 * * 1,4'"
+echo "  Weekdays at 9:00 AM:        ./setup-cron.sh $NEWSLETTER_NAME '0 9 * * 1-5'"
 echo ""
 echo "To view all newsletter cron jobs: crontab -l | grep 'auto-bulletin'"
 echo "To remove this cron job: ./stop-cron.sh $NEWSLETTER_NAME"
