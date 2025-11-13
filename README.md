@@ -140,7 +140,7 @@ auto-bulletin/
 ├── setup-cron.sh              # Cron job setup (takes newsletter name)
 ├── stop-cron.sh               # Cron job removal (takes newsletter name)
 ├── prompt.md                  # Claude instruction template
-├── template.html              # HTML email template
+├── template.html              # Default HTML email template (shared)
 ├── newsletters/
 │   ├── example/               # Template for new newsletters
 │   │   ├── config.json        # Newsletter settings template
@@ -150,6 +150,7 @@ auto-bulletin/
 │   └── your-newsletter/       # Your actual newsletters (gitignored)
 │       ├── config.json
 │       ├── topics.md
+│       ├── template.html      # OPTIONAL: Custom template override
 │       ├── output/
 │       └── logs/
 ├── CLAUDE.md                  # Architecture documentation
@@ -369,9 +370,32 @@ crontab -l | grep auto-bulletin
 
 ### Modify Newsletter Format
 
-- Edit `template.html` to change the design
+**Option 1: Shared Template (All Newsletters)**
+- Edit `template.html` to change the design for all newsletters
 - Edit newsletter `config.json` to change branding text
 - Edit `prompt.md` to customize research instructions
+
+**Option 2: Custom Template (Per-Newsletter)**
+
+Each newsletter can use its own custom template:
+
+```bash
+# Copy default template as starting point
+cp template.html newsletters/your-newsletter/template.html
+
+# Customize it
+nano newsletters/your-newsletter/template.html
+
+# Test the newsletter
+./run-newsletter.sh your-newsletter
+```
+
+The script automatically detects `newsletters/{name}/template.html` and uses it instead of the shared template. This allows you to:
+- Use different colors or branding for specific newsletters
+- Test design changes on one newsletter before applying globally
+- Create special layouts for different content types
+
+**Important**: Custom templates must maintain the same placeholder syntax (`{{TITLE}}`, `{{DATE}}`, etc.) and follow email-safe HTML practices (inline styles, table layouts).
 
 ### Change Schedule
 

@@ -87,9 +87,18 @@ if [ ! -f "$TOPICS_FILE" ]; then
     exit 1
 fi
 
+# Check for template override (local template takes precedence)
+LOCAL_TEMPLATE="$NEWSLETTER_DIR/template.html"
+if [ -f "$LOCAL_TEMPLATE" ]; then
+    TEMPLATE_FILE="$LOCAL_TEMPLATE"
+    echo "Using local template: $TEMPLATE_FILE" | tee -a "$LOG_FILE"
+else
+    TEMPLATE_FILE="template.html"
+fi
+
 # Read prompt template and substitute placeholders
 PROMPT_TEMPLATE=$(cat prompt.md)
-PROMPT=$(echo "$PROMPT_TEMPLATE" | sed "s|{{TOPICS_FILE}}|$TOPICS_FILE|g" | sed "s|{{OUTPUT_DIR}}|$OUTPUT_DIR|g" | sed "s|{{CONFIG_FILE}}|$CONFIG_FILE|g" | sed "s|{{TEMPLATE_FILE}}|template.html|g")
+PROMPT=$(echo "$PROMPT_TEMPLATE" | sed "s|{{TOPICS_FILE}}|$TOPICS_FILE|g" | sed "s|{{OUTPUT_DIR}}|$OUTPUT_DIR|g" | sed "s|{{CONFIG_FILE}}|$CONFIG_FILE|g" | sed "s|{{TEMPLATE_FILE}}|$TEMPLATE_FILE|g")
 
 # Use Claude path from environment or default to 'claude'
 CLAUDE_CMD="${CLAUDE_PATH:-claude}"

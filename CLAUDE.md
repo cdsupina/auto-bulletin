@@ -135,7 +135,7 @@ auto-bulletin/
 ├── setup-cron.sh                 # Cron setup
 ├── stop-cron.sh                  # Cron removal
 ├── prompt.md                     # Claude instruction template
-├── template.html                 # HTML email template
+├── template.html                 # Default HTML email template (shared)
 ├── newsletters/
 │   ├── example/                  # Template (committed)
 │   │   ├── config.json
@@ -145,6 +145,7 @@ auto-bulletin/
 │   └── {name}/                   # User newsletters (gitignored)
 │       ├── config.json
 │       ├── topics.md
+│       ├── template.html         # OPTIONAL: Custom template override
 │       ├── output/
 │       └── logs/
 ├── .claude/
@@ -186,11 +187,14 @@ When `run-newsletter.sh <name>` executes:
 
 2. **Generate Prompt**:
    - Reads `prompt.md` template
+   - Checks for template override:
+     - If `newsletters/{name}/template.html` exists, use it (custom template)
+     - Otherwise, use `template.html` (shared default template)
    - Substitutes placeholders:
      - `{{TOPICS_FILE}}` → `newsletters/{name}/topics.md`
      - `{{OUTPUT_DIR}}` → `newsletters/{name}/output`
      - `{{CONFIG_FILE}}` → `newsletters/{name}/config.json`
-     - `{{TEMPLATE_FILE}}` → `template.html`
+     - `{{TEMPLATE_FILE}}` → `newsletters/{name}/template.html` OR `template.html`
 
 3. **Run Claude**:
    - Passes generated prompt to Claude Code with `-p` flag
@@ -298,6 +302,39 @@ The newsletter uses `template.html` which is optimized for email clients:
   - Background: `#0e0e20`, `#27263a`
   - Accents: `#F0CD5A` (gold), `#8772d2` (purple)
   - Text: `#FFFFFE` (white), `#d1d1d1` (gray)
+
+### Template Overrides
+
+Each newsletter can optionally use a custom HTML template instead of the shared default:
+
+**How It Works**:
+- By default, all newsletters use the shared `template.html` at the project root
+- To customize a specific newsletter, create `newsletters/{name}/template.html`
+- The script automatically detects and uses the local template if present
+- Falls back to the shared template if no local override exists
+
+**Use Cases**:
+- **Different branding**: Custom colors, fonts, or layout for specific newsletters
+- **Special formatting**: Unique structure for newsletters with different content types
+- **A/B testing**: Try alternative designs for specific newsletters
+
+**Creating a Custom Template**:
+```bash
+# Copy the default template as a starting point
+cp template.html newsletters/your-newsletter/template.html
+
+# Edit the custom template
+nano newsletters/your-newsletter/template.html
+
+# Test the newsletter with the custom template
+./run-newsletter.sh your-newsletter
+```
+
+**Important Notes**:
+- Custom templates must maintain the same placeholder syntax (`{{TITLE}}`, `{{DATE}}`, etc.)
+- Follow email-safe HTML practices (inline styles, table layouts, no external resources)
+- Custom templates are gitignored, so they won't be committed to the repository
+- Each newsletter's template is completely independent
 
 ## Timeout and Retry Mechanism
 
