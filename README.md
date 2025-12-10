@@ -22,7 +22,27 @@ A fully automated multi-newsletter system that uses Claude Code to search the we
 
 ## Quick Start
 
+### Interactive Setup (Recommended)
+
+Run the setup wizard to configure everything interactively:
+
+```bash
+./setup.sh
+```
+
+The wizard will guide you through:
+1. Checking dependencies (Python 3, Claude Code, cron)
+2. Configuring SMTP settings
+3. Testing email delivery
+4. Creating your first newsletter
+5. Setting up the cron schedule
+
+### Manual Setup
+
+If you prefer to configure manually, follow the steps below.
+
 ### 1. Configure SMTP (One-Time Setup)
+
 
 Create your SMTP configuration:
 
