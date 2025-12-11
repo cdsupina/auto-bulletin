@@ -276,8 +276,8 @@ setup_newsletter() {
     fi
 
     # Get newsletter details
-    local title=$(prompt_input "Newsletter title" "My Daily Digest")
-    local subtitle=$(prompt_input "Subtitle/author" "by Auto-Bulletin")
+    local title=$(prompt_input "Newsletter title" "The Auto Bulletin")
+    local subtitle=$(prompt_input "Subtitle/author" "by Metalmancy")
 
     # Get recipient emails (comma-separated)
     echo ""
