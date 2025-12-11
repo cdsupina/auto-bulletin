@@ -125,9 +125,19 @@ check_dependencies() {
         echo ""
         print_error "Missing required dependencies: ${missing_deps[*]}"
         echo ""
-        echo "Install them with:"
-        echo "  Debian/Ubuntu: sudo apt install ${missing_deps[*]}"
-        echo "  Arch: sudo pacman -S ${missing_deps[*]}"
+        echo "Install instructions:"
+        for dep in "${missing_deps[@]}"; do
+            case "$dep" in
+                claude)
+                    echo "  Claude Code: curl -fsSL https://claude.ai/install.sh | sh"
+                    ;;
+                *)
+                    echo "  $dep:"
+                    echo "    Debian/Ubuntu: sudo apt install $dep"
+                    echo "    Arch: sudo pacman -S $dep"
+                    ;;
+            esac
+        done
         echo ""
         if ! prompt_yes_no "Continue anyway?"; then
             exit 1
