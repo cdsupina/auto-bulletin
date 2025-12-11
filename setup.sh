@@ -85,8 +85,7 @@ prompt_password() {
     local prompt="$1"
     local password
 
-    read -s -p "$prompt: " password
-    echo ""
+    read -p "$prompt: " password
     echo "$password"
 }
 
